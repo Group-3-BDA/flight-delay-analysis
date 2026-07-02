@@ -17,3 +17,6 @@ The aviation industry generates millions of flight operation records every month
  - Engineer predictive features
  - Create interactive Power BI dashboards
  - Provide AI-based Natural Language Query support
+
+### Project Architecture
+<img width="2190" height="1199" alt="Flight Delay Analysis - Proposed Architecture" src="https://github.com/user-attachments/assets/fa406a17-b3e5-4487-946d-4c386b77e9fb" />
