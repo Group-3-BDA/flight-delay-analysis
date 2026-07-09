@@ -19,4 +19,5 @@ The aviation industry generates millions of flight operation records every month
  - Provide AI-based Natural Language Query support
 
 ### Project Architecture
-<img width="2190" height="1199" alt="Flight Delay Analysis - Proposed Architecture" src="https://github.com/user-attachments/assets/fa406a17-b3e5-4487-946d-4c386b77e9fb" />
+<img width="2449" height="1171" alt="AI Powered Flight Delay Analysis - Architecture (Updated)" src="https://github.com/user-attachments/assets/34efd31d-92b6-4a4a-8fd6-6a3296f90a1d" />
+
