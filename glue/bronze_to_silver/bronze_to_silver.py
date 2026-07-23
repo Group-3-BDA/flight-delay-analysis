@@ -71,6 +71,7 @@ def read_bronze_data(spark):
         spark.read
         .format(config.READ_FORMAT)
         .options(**config.CSV_OPTIONS)
+        .option("recursiveFileLookup", "true")
         .load(config.BRONZE_PATH)
     )
 
