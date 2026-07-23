@@ -72,7 +72,7 @@ REQUIRED_COLUMNS = [
     "OriginStateName",
     "OriginCityName",
     "DestCityName",
-    "DestStateName
+    "DestStateName"
 ]
 
 # ==========================================================
