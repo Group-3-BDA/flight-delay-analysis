@@ -100,14 +100,16 @@ def main():
         # Read Bronze Layer
         bronze_df = read_bronze_data(spark)
 
-        # Step 1 - Select required columns
+        # Step 1 - Standardize column names
+        bronze_df = standardize_column_names(bronze_df)
+
+        # Step 2 - Select required columns
         silver_df = select_required_columns(
             bronze_df,
             config.REQUIRED_COLUMNS
         )
 
-        # Step 2 - Standardize column names
-        silver_df = standardize_column_names(silver_df)
+        
 
         # Step 3 - Convert datatypes
         silver_df = convert_datatypes(
