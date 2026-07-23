@@ -71,7 +71,7 @@ def read_bronze_data(spark):
         spark.read
         .format(config.READ_FORMAT)
         .options(**config.CSV_OPTIONS)
-        .load(config.BRONZE_PATH)
+        .load(config.BRONZE_PATHS)
     )
 
     logger.info("Bronze Dataset Loaded Successfully")
