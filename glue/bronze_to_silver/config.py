@@ -38,10 +38,41 @@ CSV_OPTIONS = {
 # TODO: Replace with the columns required for your Silver layer
 
 REQUIRED_COLUMNS = [
-    # "Year",
-    # "Month",
-    # "DayofMonth",
-    # "FlightDate"
+    "FlightDate",
+    "Year",
+    "Quarter",
+    "Month",
+    "DayofMonth",
+    "DayOfWeek",
+    "Marketing_Airline_Network",
+    "Flight_Number_Marketing_Airline",
+    "Origin",
+    "OriginState",
+    "Dest",
+    "DestState",
+    "CRSDepTime",
+    "CRSArrTime",
+    "ArrDelay",
+    "DepDelay",
+    "DepDel15",
+    "ArrDel15",
+    "CarrierDelay",
+    "SecurityDelay",
+    "NASDelay",
+    "WeatherDelay",
+    "LateAircraftDelay",
+    "Cancelled",
+    "Diverted",
+    "Distance",
+    "AirTime",
+    "TaxiOut",
+    "TaxiIn",
+    "Operating_Airline",
+    "Operated_or_Branded_Code_Share_Partners",
+    "OriginStateName",
+    "OriginCityName",
+    "DestCityName",
+    "DestStateName
 ]
 
 # ==========================================================
@@ -50,10 +81,32 @@ REQUIRED_COLUMNS = [
 
 # TODO: Replace according to your dataset
 
-DATATYPE_MAPPING = {
-    # "Year": "int",
-    # "Month": "int",
-    # "FlightDate": "date"
+DATATYPE_MAPPING ={
+    "FlightDate": "date",
+    "Year": "int",
+    "Quarter": "int",
+    "Month": "int",
+    "DayofMonth": "int",
+    "DayOfWeek": "int",
+    "Flight_Number_Marketing_Airline": "int",
+    "CRSDepTime": "int",
+    "CRSArrTime": "int",
+
+    "ArrDelay": "int",
+    "DepDelay": "int",
+    "DepDel15": "int",
+    "ArrDel15": "int",
+    "CarrierDelay": "int",
+    "SecurityDelay": "int",
+    "NASDelay": "int",
+    "WeatherDelay": "int",
+    "LateAircraftDelay": "int",
+    "Cancelled": "int",
+    "Diverted": "int",
+    "Distance": "int",
+    "AirTime": "int",
+    "TaxiOut": "int",
+    "TaxiIn": "int"
 }
 
 # ==========================================================
