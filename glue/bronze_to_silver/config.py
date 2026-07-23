@@ -16,7 +16,14 @@ APP_NAME = "Airline_Bronze_To_Silver_ETL"
 
 # TODO: Replace these with actual S3 paths
 
-BRONZE_PATH = "s3://airline-dataset-2020-2025/Bronze/"
+ BRONZE_PATHS = [
+    "s3://airline-dataset-2020-2025/Bronze/2020/",
+    "s3://airline-dataset-2020-2025/Bronze/2021/",
+    "s3://airline-dataset-2020-2025/Bronze/2022/",
+    "s3://airline-dataset-2020-2025/Bronze/2023/",
+    "s3://airline-dataset-2020-2025/Bronze/2024/",
+    "s3://airline-dataset-2020-2025/Bronze/2025/",
+]
 
 SILVER_PATH = "s3://silver-demo12/Silver/"
 
