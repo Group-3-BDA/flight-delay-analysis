@@ -16,9 +16,9 @@ APP_NAME = "Airline_Bronze_To_Silver_ETL"
 
 # TODO: Replace these with actual S3 paths
 
-BRONZE_PATH = ""
+BRONZE_PATH = "s3://airline-dataset-2020-2025/Silver/Flight_Data_2020_2025/"
 
-SILVER_PATH = ""
+SILVER_PATH = "s3://silver-demo12/Silver/"
 
 # ==========================================================
 # FILE FORMATS
