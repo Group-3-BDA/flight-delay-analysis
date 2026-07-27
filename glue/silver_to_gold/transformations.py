@@ -4,7 +4,6 @@ from functools import reduce
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
-from pyspark import StorageLevel
 
 from constants import AIRLINE_NAMES, REQUIRED_COLUMNS, STATE_TO_REGION
 
@@ -527,36 +526,27 @@ def add_dimension_keys(df: DataFrame) -> DataFrame:
 
 
 def build_gold_base(silver_df: DataFrame) -> DataFrame:
+    """
+    Build the complete row-level Gold feature set.
 
+    localCheckpoint is intentionally not used. It stores blocks on executor
+    local storage and becomes unrecoverable when an executor is lost.
+    The caller repartitions and persists the completed Gold base once.
+    """
     result = select_source_columns(silver_df)
-
-    # ---------------- Stage 1 ----------------
 
     result = add_time_features(result)
     result = add_calendar_features(result)
     result = add_period_features(result)
-
-    print("Checkpoint after Stage 1...")
-    result = result.localCheckpoint(eager=True)
-
-    # ---------------- Stage 2 ----------------
 
     result = add_route_and_key_features(result)
     result = add_operational_features(result)
     result = add_delay_features(result)
     result = add_delay_cause_features(result)
 
-    print("Checkpoint after Stage 2...")
-    result = result.localCheckpoint(eager=True)
-
-    # ---------------- Stage 3 ----------------
-
     result = add_status_features(result)
     result = add_airline_features(result)
     result = add_region_features(result)
     result = add_dimension_keys(result)
-
-    print("Checkpoint after Stage 3...")
-    result = result.localCheckpoint(eager=True)
 
     return result
