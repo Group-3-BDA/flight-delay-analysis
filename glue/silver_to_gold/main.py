@@ -1,7 +1,5 @@
 """Glue/EMR entry point for the Silver-to-Gold pipeline."""
 
-from __future__ import print_function
-
 import argparse
 import sys
 import traceback
@@ -25,7 +23,8 @@ from writers import write_gold_outputs
 
 
 def _glue_arguments():
-    # Parse Glue arguments only when Glue supplied JOB_NAME.
+    # EMR spark-submit does not provide --JOB_NAME.
+    # Only use Glue argument parsing when the Glue-specific argument exists.
     if "--JOB_NAME" not in sys.argv:
         return None
 
@@ -100,8 +99,16 @@ def _parse_arguments():
 def run_pipeline(spark, config):
     silver_df = spark.read.parquet(config.input_path)
 
-    gold_base_df = build_gold_base(silver_df).persist(
-        StorageLevel.DISK_ONLY
+    gold_base_df = (
+        build_gold_base(silver_df)
+        .repartition(config.shuffle_partitions)
+        .persist(StorageLevel.DISK_ONLY)
+    )
+
+    print(
+        "Gold Base repartitioned to {} partitions.".format(
+            gold_base_df.rdd.getNumPartitions()
+        )
     )
 
     print("Gold Base persisted. Triggering materialization...")
@@ -173,6 +180,10 @@ def main():
         .appName(arguments["job_name"])
         .getOrCreate()
     )
+
+
+    print("Python executable:", sys.executable)
+    print("Spark version:", spark.version)
 
     config = PipelineConfig(
         input_path=arguments["input_path"],
