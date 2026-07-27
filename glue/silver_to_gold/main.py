@@ -1,5 +1,7 @@
 """Glue/EMR entry point for the Silver-to-Gold pipeline."""
 
+from __future__ import print_function
+
 import argparse
 import sys
 import traceback
@@ -23,6 +25,10 @@ from writers import write_gold_outputs
 
 
 def _glue_arguments():
+    # Parse Glue arguments only when Glue supplied JOB_NAME.
+    if "--JOB_NAME" not in sys.argv:
+        return None
+
     try:
         from awsglue.utils import getResolvedOptions
     except ImportError:
@@ -91,13 +97,11 @@ def _parse_arguments():
     return _emr_arguments()
 
 
-spark.sparkContext.setCheckpointDir("/tmp/spark-checkpoints")
-
 def run_pipeline(spark, config):
     silver_df = spark.read.parquet(config.input_path)
 
     gold_base_df = build_gold_base(silver_df).persist(
-        StorageLevel.MEMORY_AND_DISK
+        StorageLevel.DISK_ONLY
     )
 
     print("Gold Base persisted. Triggering materialization...")
