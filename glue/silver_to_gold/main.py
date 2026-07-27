@@ -91,21 +91,43 @@ def _parse_arguments():
     return _emr_arguments()
 
 
+spark.sparkContext.setCheckpointDir("/tmp/spark-checkpoints")
+
 def run_pipeline(spark, config):
     silver_df = spark.read.parquet(config.input_path)
 
     gold_base_df = build_gold_base(silver_df).persist(
-        StorageLevel.DISK_ONLY
+        StorageLevel.MEMORY_AND_DISK
     )
+
+    print("Gold Base persisted. Triggering materialization...")
+
     gold_base_count = gold_base_df.count()
+    print("Gold Base Row Count:", gold_base_count)
+
+    print(
+        "Gold Base materialized successfully. Rows = {}".format(
+            gold_base_count
+        )
+    )
 
     try:
+        print("Building DIM_DATE...")
         dim_date_df = build_dim_date(gold_base_df)
+
+        print("Building DIM_AIRLINE...")
         dim_airline_df = build_dim_airline(gold_base_df)
+
+        print("Building DIM_AIRPORT...")
         dim_airport_df = build_dim_airport(gold_base_df)
+
+        print("Building DIM_ROUTE...")
         dim_route_df = build_dim_route(gold_base_df)
+
+        print("Building FACT_FLIGHTS...")
         fact_flights_df = build_fact_flights(gold_base_df)
 
+        print("Building ML_DATASET...")
         ml_dataset_df = build_ml_dataset(
             gold_base_df=gold_base_df,
             train_end_date=config.train_end_date,
@@ -113,11 +135,13 @@ def run_pipeline(spark, config):
             test_year=config.test_year,
         )
 
+        print("Validating FACT_FLIGHTS...")
         validate_fact(
             fact_df=fact_flights_df,
             expected_row_count=gold_base_count,
         )
 
+        print("Writing Gold tables...")
         write_gold_outputs(
             fact_flights_df=fact_flights_df,
             dim_airline_df=dim_airline_df,
@@ -129,13 +153,13 @@ def run_pipeline(spark, config):
         )
 
         print(
-            "Silver-to-Gold pipeline completed. Source rows: {}".format(
+            "Silver-to-Gold pipeline completed successfully. Source rows: {}".format(
                 gold_base_count
             )
         )
+
     finally:
         gold_base_df.unpersist(blocking=True)
-
 
 def main():
     arguments = _parse_arguments()
