@@ -1,0 +1,7 @@
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/bronze-job.json
+terraform/silver-job.json
+terraform/workflow.json
