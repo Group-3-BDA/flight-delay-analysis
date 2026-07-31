@@ -10,8 +10,11 @@ def write_gold_outputs(
     dim_date_df: DataFrame,
     dim_route_df: DataFrame,
     ml_dataset_df: DataFrame,
+    viz_delay_analytics_df: DataFrame,
+    viz_reliability_analytics_df: DataFrame,
     config,
 ) -> None:
+    # Write dimensions first. The visualization tables reuse these dimensions.
     dim_date_df.write.mode(config.output_mode).parquet(
         config.dim_date_path
     )
@@ -39,4 +42,20 @@ def write_gold_outputs(
         .mode(config.output_mode)
         .partitionBy("Year", "Month")
         .parquet(config.ml_dataset_path)
+    )
+
+    (
+        viz_delay_analytics_df
+        .write
+        .mode(config.output_mode)
+        .partitionBy("Year", "Month")
+        .parquet(config.viz_delay_analytics_path)
+    )
+
+    (
+        viz_reliability_analytics_df
+        .write
+        .mode(config.output_mode)
+        .partitionBy("Year", "Month")
+        .parquet(config.viz_reliability_analytics_path)
     )
