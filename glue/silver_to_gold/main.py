@@ -19,12 +19,11 @@ from ml_dataset import build_ml_dataset
 from spark_setup import configure_spark
 from transformations import build_gold_base
 from validation import validate_fact
+from visualization import build_visualization_tables
 from writers import write_gold_outputs
 
 
 def _glue_arguments():
-    # EMR spark-submit does not provide --JOB_NAME.
-    # Only use Glue argument parsing when the Glue-specific argument exists.
     if "--JOB_NAME" not in sys.argv:
         return None
 
@@ -97,25 +96,29 @@ def _parse_arguments():
 
 
 def run_pipeline(spark, config):
-    silver_df = spark.read.parquet(config.input_path)
+    silver_df = (
+        spark.read
+        .parquet(config.input_path)
+        .repartition(config.shuffle_partitions)
+    )
 
     gold_base_df = (
         build_gold_base(silver_df)
-        .repartition(config.shuffle_partitions)
         .persist(StorageLevel.DISK_ONLY)
     )
 
+    cached_dimensions = []
+
     print(
-        "Gold Base repartitioned to {} partitions.".format(
-            gold_base_df.rdd.getNumPartitions()
+        "Gold Base target partitions: {}".format(
+            config.shuffle_partitions
         )
     )
-
     print("Gold Base persisted. Triggering materialization...")
 
     gold_base_count = gold_base_df.count()
-    print("Gold Base Row Count:", gold_base_count)
 
+    print("Gold Base Row Count:", gold_base_count)
     print(
         "Gold Base materialized successfully. Rows = {}".format(
             gold_base_count
@@ -126,14 +129,23 @@ def run_pipeline(spark, config):
         print("Building DIM_DATE...")
         dim_date_df = build_dim_date(gold_base_df)
 
-        print("Building DIM_AIRLINE...")
-        dim_airline_df = build_dim_airline(gold_base_df)
+        print("Building and caching DIM_AIRLINE...")
+        dim_airline_df = build_dim_airline(gold_base_df).persist(
+            StorageLevel.MEMORY_AND_DISK
+        )
+        cached_dimensions.append(dim_airline_df)
 
-        print("Building DIM_AIRPORT...")
-        dim_airport_df = build_dim_airport(gold_base_df)
+        print("Building and caching DIM_AIRPORT...")
+        dim_airport_df = build_dim_airport(gold_base_df).persist(
+            StorageLevel.MEMORY_AND_DISK
+        )
+        cached_dimensions.append(dim_airport_df)
 
-        print("Building DIM_ROUTE...")
-        dim_route_df = build_dim_route(gold_base_df)
+        print("Building and caching DIM_ROUTE...")
+        dim_route_df = build_dim_route(gold_base_df).persist(
+            StorageLevel.MEMORY_AND_DISK
+        )
+        cached_dimensions.append(dim_route_df)
 
         print("Building FACT_FLIGHTS...")
         fact_flights_df = build_fact_flights(gold_base_df)
@@ -144,6 +156,17 @@ def run_pipeline(spark, config):
             train_end_date=config.train_end_date,
             validation_year=config.validation_year,
             test_year=config.test_year,
+        )
+
+        print("Building visualization aggregate tables...")
+        (
+            viz_delay_analytics_df,
+            viz_reliability_analytics_df,
+        ) = build_visualization_tables(
+            fact_flights_df=fact_flights_df,
+            dim_airline_df=dim_airline_df,
+            dim_airport_df=dim_airport_df,
+            dim_route_df=dim_route_df,
         )
 
         print("Validating FACT_FLIGHTS...")
@@ -160,17 +183,29 @@ def run_pipeline(spark, config):
             dim_date_df=dim_date_df,
             dim_route_df=dim_route_df,
             ml_dataset_df=ml_dataset_df,
+            viz_delay_analytics_df=viz_delay_analytics_df,
+            viz_reliability_analytics_df=(
+                viz_reliability_analytics_df
+            ),
             config=config,
         )
 
         print(
-            "Silver-to-Gold pipeline completed successfully. Source rows: {}".format(
-                gold_base_count
+            "Silver-to-Gold pipeline completed successfully. "
+            "Source rows: {}".format(gold_base_count)
+        )
+        print(
+            "Visualization outputs: {}, {}".format(
+                config.viz_delay_analytics_path,
+                config.viz_reliability_analytics_path,
             )
         )
 
     finally:
+        for cached_df in cached_dimensions:
+            cached_df.unpersist(blocking=False)
         gold_base_df.unpersist(blocking=True)
+
 
 def main():
     arguments = _parse_arguments()
@@ -180,7 +215,6 @@ def main():
         .appName(arguments["job_name"])
         .getOrCreate()
     )
-
 
     print("Python executable:", sys.executable)
     print("Spark version:", spark.version)
