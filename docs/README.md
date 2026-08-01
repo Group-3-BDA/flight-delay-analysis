@@ -1,6 +1,6 @@
-# AI-Powered Flight Reliability & Delay Intelligence Platform using Big Data Analytics 
+# Intelligent Aviation Reliability & Delay Prediction Platform
 ### Problem Statement 
-The aviation industry generates millions of flight operation records every month. Flight delays, cancellations, diversions, airport congestion, and operational inefficiencies result in significant f inancial losses for airlines while negatively affecting passenger satisfaction. Traditional reporting systems primarily provide historical reports after delays occur and offer limited predictive capabilities for operational planning. There is a need for a scalable Big Data platform capable of processing massive volumes of flight operational data, identifying delay patterns, predicting delays before departure, generating reliability scores, and providing actionable business insights through interactive dashboards and AI-assisted querying. This project aims to build an AI-Powered Flight Reliability & Delay Intelligence Platform using Big Data technologies, Machine Learning, and Business Intelligence tools to improve operational decision-making across the aviation ecosystem. 
+The aviation industry generates millions of flight operation records every month. Flight delays, cancellations, diversions, airport congestion, and operational inefficiencies result in significant financial losses for airlines while negatively affecting passenger satisfaction. Traditional reporting systems primarily provide historical reports after delays occur and offer limited predictive capabilities for operational planning. There is a need for a scalable Big Data platform capable of processing massive volumes of flight operational data, identifying delay patterns, predicting delays before departure, generating reliability scores, and providing actionable business insights through interactive dashboards and AI-assisted querying. This project aims to build an AI-Powered Flight Reliability & Delay Intelligence Platform using Big Data technologies, Machine Learning, and Business Intelligence tools to improve operational decision-making across the aviation ecosystem. 
 ### Objectives
  - Analyze US Domestic Flight Operations (2020–2025)
  - Identify major causes of flight delays
@@ -16,8 +16,8 @@ The aviation industry generates millions of flight operation records every month
  - Perform distributed data processing using Spark
  - Engineer predictive features
  - Create interactive Power BI dashboards
- - Provide AI-based Natural Language Query support
 
 ### Project Architecture
-<img width="2449" height="1171" alt="AI Powered Flight Delay Analysis - Architecture (Updated)" src="https://github.com/user-attachments/assets/34efd31d-92b6-4a4a-8fd6-6a3296f90a1d" />
+<img width="830" height="123" alt="diagram-export-1-8-2026-11_54_14-pm" src="https://github.com/user-attachments/assets/1fab9350-2054-4d89-ac99-1bca34a9c0e6" />
+
 
