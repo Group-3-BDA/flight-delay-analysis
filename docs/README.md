@@ -18,6 +18,7 @@ The aviation industry generates millions of flight operation records every month
  - Create interactive Power BI dashboards
 
 ### Project Architecture
-<img width="830" height="123" alt="diagram-export-1-8-2026-11_54_14-pm" src="https://github.com/user-attachments/assets/1fab9350-2054-4d89-ac99-1bca34a9c0e6" />
+<img width="2038" height="1327" alt="diagram-export-1-8-2026-11_57_00-pm" src="https://github.com/user-attachments/assets/6ba7a0b5-6a19-449b-b7cc-7cfc4827740c" />
+
 
 
