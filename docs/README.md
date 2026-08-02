@@ -243,7 +243,7 @@ This makes the project easier to maintain and allows new data to be processed wi
 ---
 
 ### Project Architecture
-<img width="2038" height="1156" alt="diagram-export-1-8-2026-11_57_00-pm" src="https://github.com/user-attachments/assets/11364002-73bb-4ccb-a972-6666fc1b56cf" />
+<img width="2038" height="1154" alt="diagram-export-2-8-2026-11_02_26-am" src="https://github.com/user-attachments/assets/98543016-41e9-4e32-8348-ab430a3e6f15" />
 
 # Project Repository
 
