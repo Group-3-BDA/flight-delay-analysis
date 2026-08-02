@@ -47,3 +47,18 @@ class PipelineConfig:
     @property
     def ml_dataset_path(self):
         return self.gold_base_path.rstrip("/") + "/ML_DATASET/"
+
+    @property
+    def viz_delay_analytics_path(self):
+        return (
+            self.gold_base_path.rstrip("/")
+            + "/VIZ_DELAY_ANALYTICS/"
+        )
+
+    @property
+    def viz_reliability_analytics_path(self):
+        return (
+            self.gold_base_path.rstrip("/")
+            + "/VIZ_RELIABILITY_ANALYTICS/"
+        )
+
