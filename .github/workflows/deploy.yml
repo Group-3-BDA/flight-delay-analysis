@@ -93,11 +93,11 @@ jobs:
 
     - name: Terraform Plan
       working-directory: terraform
-      run: terraform plan
+      run: terraform plan -out=tfplan
 
     - name: Terraform Apply
       working-directory: terraform
-      run: terraform apply -auto-approve
+      run: terraform apply -auto-approve tfplan
 
     ############################################################
     # Trigger Glue Workflow
