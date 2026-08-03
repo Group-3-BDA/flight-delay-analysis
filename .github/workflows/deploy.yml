@@ -62,7 +62,7 @@ jobs:
     - name: Upload Bronze Scripts to S3
       run: |
         aws s3 sync glue/bronze_to_silver \
-        s3://flight-delay-scripts/glue/bronze_to_silver \
+        s3://${{ secrets.S3_BUCKET_NAME }}/glue/bronze_to_silver \
         --delete
 
     ############################################################
@@ -72,7 +72,7 @@ jobs:
     - name: Upload Silver Scripts to S3
       run: |
         aws s3 sync glue/silver_to_gold \
-        s3://flight-delay-scripts/glue/silver_to_gold \
+        s3://${{ secrets.S3_BUCKET_NAME }}/glue/silver_to_gold \
         --delete
 
     ############################################################
