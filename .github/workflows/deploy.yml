@@ -4,3 +4,7 @@ on:
   push:
     branches:
       - main
+jobs:
+  deploy:
+    name: Deploy Flight Delay Pipeline
+    runs-on: ubuntu-latest
