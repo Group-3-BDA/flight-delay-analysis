@@ -3,7 +3,7 @@ resource "aws_glue_trigger" "start_bronze_silver" {
   workflow_name = aws_glue_workflow.flight_delay_workflow.name
   type          = "ON_DEMAND"
 
-  enabled = false
+  enabled = true
 
   actions {
     job_name = aws_glue_job.bronze_job.name
@@ -15,7 +15,7 @@ resource "aws_glue_trigger" "run_silver_gold" {
   workflow_name = aws_glue_workflow.flight_delay_workflow.name
   type          = "CONDITIONAL"
 
-  enabled = false
+  enabled = true
 
   actions {
     job_name = aws_glue_job.silver_job.name
