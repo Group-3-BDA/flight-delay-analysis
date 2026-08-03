@@ -11,14 +11,14 @@ resource "aws_glue_job" "bronze_job" {
 
   command {
     name            = "glueetl"
-    script_location = "s3://flight-delay-scripts/scripts/bronze-to-silver-glue-test.py"
+    script_location = "s3://flight-delay-scripts/glue/bronze_to_silver/bronze_to_silver.py"
     python_version  = "3"
   }
 
   default_arguments = {
     "--enable-metrics"                   = ""
     "--enable-spark-ui"                  = "true"
-    "--extra-py-files"                   = "s3://flight-delay-scripts/scripts/dependencies.zip"
+    "--extra-py-files"                   = "s3://flight-delay-scripts/glue/bronze_to_silver/dependencies.zip"
     "--spark-event-logs-path"            = "s3://aws-glue-assets-851725344261-us-east-1/sparkHistoryLogs/"
     "--enable-job-insights"              = "false"
     "--enable-observability-metrics"     = "true"
@@ -48,7 +48,7 @@ resource "aws_glue_job" "silver_job" {
 
   command {
     name            = "glueetl"
-    script_location = "s3://flight-delay-scripts/scripts/Silver_to_Gold_test.py"
+    script_location = "s3://flight-delay-scripts/glue/silver_to_gold/main.py"
     python_version  = "3"
   }
 
@@ -60,7 +60,7 @@ resource "aws_glue_job" "silver_job" {
     "--TempDir"                          = "s3://aws-glue-assets-851725344261-us-east-1/temporary/"
     "--enable-metrics"                   = ""
     "--enable-spark-ui"                  = "true"
-    "--extra-py-files"                   = "s3://flight-delay-scripts/scripts/silver_to_gold_lib.zip"
+    "--extra-py-files"                   = "s3://flight-delay-scripts/glue/silver_to_gold/silver_to_gold_lib.zip"
     "--spark-event-logs-path"            = "s3://aws-glue-assets-851725344261-us-east-1/sparkHistoryLogs/"
     "--enable-job-insights"              = "false"
     "--enable-observability-metrics"     = "true"
