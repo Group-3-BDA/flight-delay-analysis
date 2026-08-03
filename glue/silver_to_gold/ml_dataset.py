@@ -188,12 +188,111 @@ def build_training_scores(
         .select("RouteKey", "RouteReliabilityScore")
     )
 
-    return (
-        airline_scores,
-        origin_scores,
-        destination_scores,
-        route_scores,
+    airline_volume = (
+    history
+    .groupBy(
+        F.col("MarketingAirlineKey").alias("AirlineKey")
     )
+    .agg(
+        F.count("*").alias("AirlineFlightCount")
+    )
+)
+    origin_volume = (
+    history
+    .groupBy(
+        F.col("OriginAirportKey").alias("AirportKey")
+    )
+    .agg(
+        F.count("*").alias("OriginAirportFlightCount")
+    )
+)
+    destination_volume = (
+    history
+    .groupBy(
+        F.col("DestAirportKey").alias("AirportKey")
+    )
+    .agg(
+        F.count("*").alias("DestAirportFlightCount")
+    )
+)
+    route_statistics = (
+    history
+    .filter(
+        (F.col("Cancelled")==0) &
+        (F.col("Diverted")==0) &
+        F.col("ArrDel15").isNotNull()
+    )
+    .groupBy("RouteKey")
+    .agg(
+        F.count("*").alias("RouteFlightCount"),
+        F.avg("Distance").alias("RouteAvgDistance"),
+        F.avg("ScheduledElapsedTimeMinutes").alias("RouteAvgElapsedTime"),
+        F.avg("ArrDel15").alias("RouteHistoricalDelayRate")
+    )
+)
+    airline_month_delay = (
+    history
+    .filter(
+        (F.col("Cancelled") == 0) &
+        (F.col("Diverted") == 0) &
+        F.col("ArrDel15").isNotNull()
+    )
+    .groupBy(
+        F.col("MarketingAirlineKey").alias("AirlineKey"),
+        "Month"
+    )
+    .agg(
+        F.avg("ArrDel15").alias("AirlineMonthlyDelayRate")
+    )
+)
+    origin_month_delay = (
+    history
+    .filter(
+        (F.col("Cancelled") == 0) &
+        (F.col("Diverted") == 0) &
+        F.col("ArrDel15").isNotNull()
+    )
+    .groupBy(
+        F.col("OriginAirportKey").alias("AirportKey"),
+        "Month"
+    )
+    .agg(
+        F.avg("ArrDel15").alias("OriginMonthlyDelayRate")
+    )
+)
+    destination_month_delay = (
+    history
+    .filter(
+        (F.col("Cancelled") == 0) &
+        (F.col("Diverted") == 0) &
+        F.col("ArrDel15").isNotNull()
+    )
+    .groupBy(
+        F.col("DestAirportKey").alias("AirportKey"),
+        "Month"
+    )
+    .agg(
+        F.avg("ArrDel15").alias("DestMonthlyDelayRate")
+    )
+)
+    
+
+    return (
+    airline_scores,
+    origin_scores,
+    destination_scores,
+    route_scores,
+
+    airline_volume,
+    origin_volume,
+    destination_volume,
+
+    route_statistics,
+
+    airline_month_delay,
+    origin_month_delay,
+    destination_month_delay,
+)
 
 
 def build_ml_dataset(
@@ -203,11 +302,25 @@ def build_ml_dataset(
     test_year: int,
 ) -> DataFrame:
     (
-        airline_scores,
-        origin_scores,
-        destination_scores,
-        route_scores,
-    ) = build_training_scores(gold_base_df, train_end_date)
+    airline_scores,
+    origin_scores,
+    destination_scores,
+    route_scores,
+
+    airline_volume,
+    origin_volume,
+    destination_volume,
+
+    route_statistics,
+
+    airline_month_delay,
+    origin_month_delay,
+    destination_month_delay,
+
+) = build_training_scores(
+    gold_base_df,
+    train_end_date,
+)
 
     ml_base = (
         gold_base_df
@@ -246,45 +359,181 @@ def build_ml_dataset(
     )
 
     return (
-        ml_base
-        .join(
-            airline_scores.withColumnRenamed(
-                "AirlineKey",
-                "MarketingAirlineKey",
-            ),
-            on="MarketingAirlineKey",
-            how="left",
-        )
-        .join(
-            origin_scores.withColumnRenamed(
-                "AirportKey",
-                "OriginAirportKey",
-            ),
-            on="OriginAirportKey",
-            how="left",
-        )
-        .join(
-            destination_scores.withColumnRenamed(
-                "AirportKey",
-                "DestAirportKey",
-            ),
-            on="DestAirportKey",
-            how="left",
-        )
-        .join(route_scores, on="RouteKey", how="left")
-        .withColumn(
-            "DatasetSplit",
-            F.when(
-                F.col("FlightDate")
-                <= F.to_date(F.lit(train_end_date)),
-                "Train",
-            )
-            .when(F.col("Year") == validation_year, "Validation")
-            .when(F.col("Year") == test_year, "Test")
-            .otherwise("OutsideConfiguredSplit"),
-        )
-        .withColumn(
-            "ReliabilityFeatureScope",
-            F.lit("TRAINING_HISTORY_ONLY"),
-        )
+
+    ml_base
+
+
+    # Existing Reliability Features
+
+    .join(
+        airline_scores.withColumnRenamed(
+            "AirlineKey",
+            "MarketingAirlineKey"
+        ),
+        on="MarketingAirlineKey",
+        how="left"
     )
+
+    .join(
+        origin_scores.withColumnRenamed(
+            "AirportKey",
+            "OriginAirportKey"
+        ),
+        on="OriginAirportKey",
+        how="left"
+    )
+
+    .join(
+        destination_scores.withColumnRenamed(
+            "AirportKey",
+            "DestAirportKey"
+        ),
+        on="DestAirportKey",
+        how="left"
+    )
+
+    .join(
+        route_scores,
+        on="RouteKey",
+        how="left"
+    )
+
+    # Airline Volume
+
+    .join(
+        airline_volume.withColumnRenamed(
+            "AirlineKey",
+            "MarketingAirlineKey"
+        ),
+        on="MarketingAirlineKey",
+        how="left"
+    )
+
+    
+    # Origin Airport Volume
+
+
+    .join(
+        origin_volume.withColumnRenamed(
+            "AirportKey",
+            "OriginAirportKey"
+        ),
+        on="OriginAirportKey",
+        how="left"
+    )
+
+    # Destination Airport Volume
+    
+    .join(
+        destination_volume.withColumnRenamed(
+            "AirportKey",
+            "DestAirportKey"
+        ),
+        on="DestAirportKey",
+        how="left"
+    )
+
+    
+    # Route Statistics
+
+    .join(
+        route_statistics,
+        on="RouteKey",
+        how="left"
+    )
+
+    #Airline Month Delay
+
+    .join(
+    airline_month_delay
+        .withColumnRenamed(
+            "AirlineKey",
+            "MarketingAirlineKey"
+        ),
+    on=["MarketingAirlineKey", "Month"],
+    how="left"
+)
+
+   
+    #Origin Month Delay
+    
+    .join(
+    origin_month_delay
+        .withColumnRenamed(
+            "AirportKey",
+            "OriginAirportKey"
+        ),
+    on=["OriginAirportKey", "Month"],
+    how="left"
+)
+
+    
+    #Destination Month Delay
+    
+
+    .join(
+    destination_month_delay
+        .withColumnRenamed(
+            "AirportKey",
+            "DestAirportKey"
+        ),
+    on=["DestAirportKey", "Month"],
+    how="left"
+)
+
+    .dropDuplicates(["FlightKey"])
+
+
+    .fillna({
+
+    "AirlineReliabilityScore":50,
+    "OriginAirportReliabilityScore":50,
+    "DestAirportReliabilityScore":50,
+    "RouteReliabilityScore":50,
+
+    "AirlineFlightCount":0,
+    "OriginAirportFlightCount":0,
+    "DestAirportFlightCount":0,
+    "RouteFlightCount":0,
+
+    "RouteAvgDistance":0,
+    "RouteAvgElapsedTime":0,
+
+    "RouteHistoricalDelayRate":0.5,
+    "AirlineMonthlyDelayRate":0.5,
+    "OriginMonthlyDelayRate":0.5,
+    "DestMonthlyDelayRate":0.5,
+
+})
+
+    
+
+    #Data split
+
+    .withColumn(
+    "DatasetSplit",
+    F.when(
+        F.col("FlightDate") <= F.to_date(F.lit(train_end_date)),
+        "Train",
+    )
+    .when(
+        F.col("Year") == validation_year,
+        "Validation",
+    )
+    .when(
+        F.col("Year") == test_year,
+        "Test",
+    )
+    .otherwise(None)
+)
+
+.filter(
+    F.col("DatasetSplit").isNotNull()
+)
+
+.withColumn(
+    "ReliabilityFeatureScope",
+    F.lit("TRAINING_HISTORY_ONLY")
+)
+    
+)
