@@ -87,15 +87,6 @@ def test_validate_fact_null_key_failure():
         )
     ]
 
-    columns = [
-        "FlightKey",
-        "DateKey",
-        "MarketingAirlineKey",
-        "OperatingAirlineKey",
-        "OriginAirportKey",
-        "DestAirportKey",
-        "RouteKey",
-    ]
     schema = StructType(
         [
             StructField("FlightKey", StringType(), True),

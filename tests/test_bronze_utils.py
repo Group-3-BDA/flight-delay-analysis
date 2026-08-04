@@ -1,5 +1,4 @@
 from pyspark.sql import SparkSession
-import pytest
 
 from glue.bronze_to_silver.utils import (
     select_required_columns,
