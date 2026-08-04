@@ -13,16 +13,8 @@ def _reliability_score(
         100
         * (
             0.70 * F.coalesce(on_time_rate, F.lit(0.0))
-            + 0.20
-            * (
-                1
-                - F.coalesce(cancellation_rate, F.lit(0.0))
-            )
-            + 0.10
-            * (
-                1
-                - F.coalesce(diversion_rate, F.lit(0.0))
-            )
+            + 0.20 * (1 - F.coalesce(cancellation_rate, F.lit(0.0)))
+            + 0.10 * (1 - F.coalesce(diversion_rate, F.lit(0.0)))
         ),
         2,
     )
@@ -37,10 +29,7 @@ def build_training_scores(
     )
 
     airline_scores = (
-        history
-        .groupBy(
-            F.col("MarketingAirlineKey").alias("AirlineKey")
-        )
+        history.groupBy(F.col("MarketingAirlineKey").alias("AirlineKey"))
         .agg(
             F.avg(
                 F.when(
@@ -78,15 +67,11 @@ def build_training_scores(
     )
 
     origin_scores = (
-        history
-        .groupBy(
-            F.col("OriginAirportKey").alias("AirportKey")
-        )
+        history.groupBy(F.col("OriginAirportKey").alias("AirportKey"))
         .agg(
             F.avg(
                 F.when(
-                    (F.col("Cancelled") == 0)
-                    & F.col("DepDelay").isNotNull(),
+                    (F.col("Cancelled") == 0) & F.col("DepDelay").isNotNull(),
                     F.when(
                         F.col("DepDelay") <= 15,
                         1.0,
@@ -118,10 +103,7 @@ def build_training_scores(
     )
 
     destination_scores = (
-        history
-        .groupBy(
-            F.col("DestAirportKey").alias("AirportKey")
-        )
+        history.groupBy(F.col("DestAirportKey").alias("AirportKey"))
         .agg(
             F.avg(
                 F.when(
@@ -150,8 +132,7 @@ def build_training_scores(
     )
 
     route_scores = (
-        history
-        .groupBy("RouteKey")
+        history.groupBy("RouteKey")
         .agg(
             F.avg(
                 F.when(
@@ -209,45 +190,40 @@ def build_ml_dataset(
         route_scores,
     ) = build_training_scores(gold_base_df, train_end_date)
 
-    ml_base = (
-        gold_base_df
-        .filter(
-            (F.col("Cancelled") == 0)
-            & (F.col("Diverted") == 0)
-            & F.col("ArrDel15").isNotNull()
-        )
-        .select(
-            "FlightKey",
-            "FlightDate",
-            "Year",
-            "Quarter",
-            "Month",
-            "DayofMonth",
-            "DayOfWeek",
-            "DepartureHour",
-            "ArrivalHour",
-            "DeparturePeriod",
-            "ArrivalPeriod",
-            "PeakHourIndicator",
-            "WeekendIndicator",
-            "SeasonIndicator",
-            "MarketingAirlineKey",
-            "OperatingAirlineKey",
-            "OriginAirportKey",
-            "DestAirportKey",
-            "RouteKey",
-            "Distance",
-            "ScheduledElapsedTimeMinutes",
-            "DistanceCategory",
-            "CodeshareFlag",
-            "IntraStateRouteFlag",
-            "ArrDel15",
-        )
+    ml_base = gold_base_df.filter(
+        (F.col("Cancelled") == 0)
+        & (F.col("Diverted") == 0)
+        & F.col("ArrDel15").isNotNull()
+    ).select(
+        "FlightKey",
+        "FlightDate",
+        "Year",
+        "Quarter",
+        "Month",
+        "DayofMonth",
+        "DayOfWeek",
+        "DepartureHour",
+        "ArrivalHour",
+        "DeparturePeriod",
+        "ArrivalPeriod",
+        "PeakHourIndicator",
+        "WeekendIndicator",
+        "SeasonIndicator",
+        "MarketingAirlineKey",
+        "OperatingAirlineKey",
+        "OriginAirportKey",
+        "DestAirportKey",
+        "RouteKey",
+        "Distance",
+        "ScheduledElapsedTimeMinutes",
+        "DistanceCategory",
+        "CodeshareFlag",
+        "IntraStateRouteFlag",
+        "ArrDel15",
     )
 
     return (
-        ml_base
-        .join(
+        ml_base.join(
             airline_scores.withColumnRenamed(
                 "AirlineKey",
                 "MarketingAirlineKey",
@@ -275,8 +251,7 @@ def build_ml_dataset(
         .withColumn(
             "DatasetSplit",
             F.when(
-                F.col("FlightDate")
-                <= F.to_date(F.lit(train_end_date)),
+                F.col("FlightDate") <= F.to_date(F.lit(train_end_date)),
                 "Train",
             )
             .when(F.col("Year") == validation_year, "Validation")

@@ -3,10 +3,7 @@ from pyspark.sql import SparkSession
 from glue.silver_to_gold.validation import validate_fact
 
 spark = (
-    SparkSession.builder
-    .master("local[1]")
-    .appName("validation-tests")
-    .getOrCreate()
+    SparkSession.builder.master("local[1]").appName("validation-tests").getOrCreate()
 )
 
 

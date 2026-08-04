@@ -8,10 +8,8 @@ on Spark DataFrames.
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, to_date
 
-def select_required_columns(
-    df: DataFrame,
-    required_columns: list
-) -> DataFrame:
+
+def select_required_columns(df: DataFrame, required_columns: list) -> DataFrame:
     """
     Select only the columns required for the Silver layer.
 
@@ -32,7 +30,6 @@ def select_required_columns(
     return df.select(*required_columns)
 
 
-
 def standardize_column_names(df: DataFrame) -> DataFrame:
     """
     Standardize DataFrame column names by removing unwanted
@@ -49,29 +46,27 @@ def standardize_column_names(df: DataFrame) -> DataFrame:
         DataFrame with cleaned column names.
     """
 
-    return df.select([
-        col(column).alias(
-            column.strip()
-                  .replace(" ", "_")
-                  .replace(",", "")
-                  .replace(";", "")
-                  .replace("{", "")
-                  .replace("}", "")
-                  .replace("(", "")
-                  .replace(")", "")
-                  .replace("\n", "")
-                  .replace("\t", "")
-                  .replace("=", "_")
-        )
-        for column in df.columns
-    ])
+    return df.select(
+        [
+            col(column).alias(
+                column.strip()
+                .replace(" ", "_")
+                .replace(",", "")
+                .replace(";", "")
+                .replace("{", "")
+                .replace("}", "")
+                .replace("(", "")
+                .replace(")", "")
+                .replace("\n", "")
+                .replace("\t", "")
+                .replace("=", "_")
+            )
+            for column in df.columns
+        ]
+    )
 
 
-
-def convert_datatypes(
-    df: DataFrame,
-    datatype_mapping: dict
-) -> DataFrame:
+def convert_datatypes(df: DataFrame, datatype_mapping: dict) -> DataFrame:
     """
     Convert DataFrame columns to the required Spark datatypes.
 
@@ -94,19 +89,12 @@ def convert_datatypes(
         if column_name in df.columns:
 
             if data_type == "date":
-                df = df.withColumn(
-                    column_name,
-                    to_date(col(column_name), "yyyy-MM-dd")
-                )
+                df = df.withColumn(column_name, to_date(col(column_name), "yyyy-MM-dd"))
 
             else:
-                df = df.withColumn(
-                    column_name,
-                    col(column_name).cast(data_type)
-                )
+                df = df.withColumn(column_name, col(column_name).cast(data_type))
 
     return df
-
 
 
 def validate_dataframe(df: DataFrame) -> bool:
@@ -124,18 +112,10 @@ def validate_dataframe(df: DataFrame) -> bool:
         True if the DataFrame is valid.
     """
 
-    return (
-        df is not None
-        and len(df.columns) > 0
-        and df.count() > 0
-    )
+    return df is not None and len(df.columns) > 0 and df.count() > 0
 
 
-
-def write_silver(
-    df: DataFrame,
-    output_path: str
-) -> None:
+def write_silver(df: DataFrame, output_path: str) -> None:
     """
     Write the DataFrame to the Silver layer in Parquet format.
 
@@ -153,9 +133,8 @@ def write_silver(
     """
 
     (
-        df.write
-          .mode("overwrite")
-          .partitionBy("Year")
-          .option("compression", "snappy")
-          .parquet(output_path)
+        df.write.mode("overwrite")
+        .partitionBy("Year")
+        .option("compression", "snappy")
+        .parquet(output_path)
     )

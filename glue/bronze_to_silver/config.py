@@ -33,10 +33,7 @@ SILVER_PATH = "s3://silver-demo12/Silver/"
 
 READ_FORMAT = "csv"
 
-CSV_OPTIONS = {
-    "header": "true",
-    "inferSchema": "true"
-}
+CSV_OPTIONS = {"header": "true", "inferSchema": "true"}
 
 # ==========================================================
 # REQUIRED COLUMNS
@@ -79,7 +76,7 @@ REQUIRED_COLUMNS = [
     "OriginStateName",
     "OriginCityName",
     "DestCityName",
-    "DestStateName"
+    "DestStateName",
 ]
 
 # ==========================================================
@@ -88,7 +85,7 @@ REQUIRED_COLUMNS = [
 
 # TODO: Replace according to your dataset
 
-DATATYPE_MAPPING ={
+DATATYPE_MAPPING = {
     "FlightDate": "date",
     "Year": "int",
     "Quarter": "int",
@@ -98,7 +95,6 @@ DATATYPE_MAPPING ={
     "Flight_Number_Marketing_Airline": "int",
     "CRSDepTime": "int",
     "CRSArrTime": "int",
-
     "ArrDelay": "int",
     "DepDelay": "int",
     "DepDel15": "int",
@@ -113,7 +109,7 @@ DATATYPE_MAPPING ={
     "Distance": "int",
     "AirTime": "int",
     "TaxiOut": "int",
-    "TaxiIn": "int"
+    "TaxiIn": "int",
 }
 
 # ==========================================================

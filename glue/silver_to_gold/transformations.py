@@ -12,8 +12,7 @@ def validate_source_columns(df: DataFrame) -> None:
     missing = sorted(set(REQUIRED_COLUMNS) - set(df.columns))
     if missing:
         raise ValueError(
-            "Silver dataset is missing required columns: "
-            + ", ".join(missing)
+            "Silver dataset is missing required columns: " + ", ".join(missing)
         )
 
 
@@ -29,7 +28,6 @@ def _create_map(mapping):
     return F.create_map(*expressions)
 
 
-
 def add_hhmm_features(
     df: DataFrame,
     source_column: str,
@@ -43,23 +41,16 @@ def add_hhmm_features(
     hour = F.floor(normalized / 100).cast("int")
     minute = (normalized % 100).cast("int")
 
-    valid = (
-        normalized.isNotNull()
-        & hour.between(0, 23)
-        & minute.between(0, 59)
-    )
+    valid = normalized.isNotNull() & hour.between(0, 23) & minute.between(0, 59)
 
     return (
-        df
-        .withColumn(
+        df.withColumn(
             "{}Hour".format(prefix),
             F.when(valid, hour).otherwise(F.lit(None).cast("int")),
         )
         .withColumn(
             "{}Minute".format(prefix),
-            F.when(valid, minute).otherwise(
-                F.lit(None).cast("int")
-            ),
+            F.when(valid, minute).otherwise(F.lit(None).cast("int")),
         )
         .withColumn(
             "{}TimeHHMM".format(prefix),
@@ -82,7 +73,8 @@ def add_time_features(df: DataFrame) -> DataFrame:
             - F.col("DepartureHour") * 60
             - F.col("DepartureMinute")
             + 1440
-        ) % 1440
+        )
+        % 1440
     ).cast("int")
 
     return result.withColumn(
@@ -93,8 +85,7 @@ def add_time_features(df: DataFrame) -> DataFrame:
 
 def add_calendar_features(df: DataFrame) -> DataFrame:
     return (
-        df
-        .withColumn(
+        df.withColumn(
             "WeekendIndicator",
             F.when(F.col("DayOfWeek").isin(6, 7), 1).otherwise(0),
         )
@@ -130,8 +121,7 @@ def add_calendar_features(df: DataFrame) -> DataFrame:
 
 def add_period_features(df: DataFrame) -> DataFrame:
     return (
-        df
-        .withColumn(
+        df.withColumn(
             "DeparturePeriod",
             F.when(F.col("DepartureHour").between(5, 11), "Morning")
             .when(
@@ -163,8 +153,7 @@ def add_period_features(df: DataFrame) -> DataFrame:
 
 def add_route_and_key_features(df: DataFrame) -> DataFrame:
     return (
-        df
-        .withColumn(
+        df.withColumn(
             "Route",
             F.concat_ws("-", F.col("Origin"), F.col("Dest")),
         )
@@ -195,9 +184,7 @@ def add_route_and_key_features(df: DataFrame) -> DataFrame:
                     F.lit("UNK"),
                 ),
                 F.coalesce(
-                    F.col(
-                        "Flight_Number_Marketing_Airline"
-                    ).cast("string"),
+                    F.col("Flight_Number_Marketing_Airline").cast("string"),
                     F.lit("UNK"),
                 ),
                 F.coalesce(F.col("Origin"), F.lit("UNK")),
@@ -217,8 +204,7 @@ def add_route_and_key_features(df: DataFrame) -> DataFrame:
 
 def add_operational_features(df: DataFrame) -> DataFrame:
     return (
-        df
-        .withColumn(
+        df.withColumn(
             "FlightTimeCompleteFlag",
             F.when(
                 F.col("AirTime").isNotNull()
@@ -231,9 +217,7 @@ def add_operational_features(df: DataFrame) -> DataFrame:
             "TotalFlightTimeMinutes",
             F.when(
                 F.col("FlightTimeCompleteFlag") == 1,
-                F.col("AirTime")
-                + F.col("TaxiOut")
-                + F.col("TaxiIn"),
+                F.col("AirTime") + F.col("TaxiOut") + F.col("TaxiIn"),
             ).otherwise(F.lit(None).cast("int")),
         )
         .withColumn(
@@ -270,8 +254,7 @@ def add_operational_features(df: DataFrame) -> DataFrame:
 
 def add_delay_features(df: DataFrame) -> DataFrame:
     return (
-        df
-        .withColumn(
+        df.withColumn(
             "HasDepDelay",
             F.when(F.col("DepDelay").isNotNull(), 1).otherwise(0),
         )
@@ -330,10 +313,7 @@ def add_delay_cause_features(df: DataFrame) -> DataFrame:
 
     total_expression = reduce(
         lambda left, right: left + right,
-        [
-            F.col("{}Filled".format(column_name))
-            for column_name in cause_columns
-        ],
+        [F.col("{}Filled".format(column_name)) for column_name in cause_columns],
     )
 
     result = result.withColumn(
@@ -345,10 +325,7 @@ def add_delay_cause_features(df: DataFrame) -> DataFrame:
     )
 
     greatest_cause = F.greatest(
-        *[
-            F.col("{}Filled".format(column_name))
-            for column_name in cause_columns
-        ]
+        *[F.col("{}Filled".format(column_name)) for column_name in cause_columns]
     )
 
     return result.withColumn(
@@ -367,27 +344,21 @@ def add_delay_cause_features(df: DataFrame) -> DataFrame:
 
 
 def add_status_features(df: DataFrame) -> DataFrame:
-    return (
-        df
-        .withColumn(
-            "FlightStatus",
-            F.when(F.col("Cancelled") == 1, "Cancelled")
-            .when(F.col("Diverted") == 1, "Diverted")
-            .when(
-                (F.col("Cancelled") == 0)
-                & (F.col("Diverted") == 0),
-                "Completed",
-            )
-            .otherwise("Unknown"),
+    return df.withColumn(
+        "FlightStatus",
+        F.when(F.col("Cancelled") == 1, "Cancelled")
+        .when(F.col("Diverted") == 1, "Diverted")
+        .when(
+            (F.col("Cancelled") == 0) & (F.col("Diverted") == 0),
+            "Completed",
         )
-        .withColumn(
-            "CompletedFlightFlag",
-            F.when(
-                (F.col("Cancelled") == 0)
-                & (F.col("Diverted") == 0),
-                1,
-            ).otherwise(0),
-        )
+        .otherwise("Unknown"),
+    ).withColumn(
+        "CompletedFlightFlag",
+        F.when(
+            (F.col("Cancelled") == 0) & (F.col("Diverted") == 0),
+            1,
+        ).otherwise(0),
     )
 
 
@@ -395,15 +366,12 @@ def add_airline_features(df: DataFrame) -> DataFrame:
     airline_map = _create_map(AIRLINE_NAMES)
 
     return (
-        df
-        .withColumn(
+        df.withColumn(
             "CodeshareFlag",
             F.when(
                 F.upper(
                     F.coalesce(
-                        F.col(
-                            "Operated_or_Branded_Code_Share_Partners"
-                        ),
+                        F.col("Operated_or_Branded_Code_Share_Partners"),
                         F.lit(""),
                     )
                 ).contains("CODESHARE"),
@@ -412,10 +380,7 @@ def add_airline_features(df: DataFrame) -> DataFrame:
             .when(
                 F.col("Marketing_Airline_Network").isNotNull()
                 & F.col("Operating_Airline").isNotNull()
-                & (
-                    F.col("Marketing_Airline_Network")
-                    != F.col("Operating_Airline")
-                ),
+                & (F.col("Marketing_Airline_Network") != F.col("Operating_Airline")),
                 1,
             )
             .otherwise(0),
@@ -455,29 +420,24 @@ def add_airline_features(df: DataFrame) -> DataFrame:
 
 def add_region_features(df: DataFrame) -> DataFrame:
     region_map = _create_map(STATE_TO_REGION)
-    return (
-        df
-        .withColumn(
-            "OriginRegion",
-            F.coalesce(
-                region_map[F.col("OriginState")],
-                F.lit("Unknown"),
-            ),
-        )
-        .withColumn(
-            "DestRegion",
-            F.coalesce(
-                region_map[F.col("DestState")],
-                F.lit("Unknown"),
-            ),
-        )
+    return df.withColumn(
+        "OriginRegion",
+        F.coalesce(
+            region_map[F.col("OriginState")],
+            F.lit("Unknown"),
+        ),
+    ).withColumn(
+        "DestRegion",
+        F.coalesce(
+            region_map[F.col("DestState")],
+            F.lit("Unknown"),
+        ),
     )
 
 
 def add_dimension_keys(df: DataFrame) -> DataFrame:
     return (
-        df
-        .withColumn(
+        df.withColumn(
             "DateKey",
             F.date_format("FlightDate", "yyyyMMdd").cast("int"),
         )

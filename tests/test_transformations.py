@@ -6,8 +6,7 @@ from glue.silver_to_gold.transformations import (
 )
 
 spark = (
-    SparkSession.builder
-    .master("local[1]")
+    SparkSession.builder.master("local[1]")
     .appName("transformation-tests")
     .getOrCreate()
 )
@@ -15,10 +14,7 @@ spark = (
 
 def test_validate_source_columns_missing():
 
-    df = spark.createDataFrame(
-        [(1,)],
-        ["FlightID"]
-    )
+    df = spark.createDataFrame([(1,)], ["FlightID"])
 
     with pytest.raises(ValueError):
         validate_source_columns(df)

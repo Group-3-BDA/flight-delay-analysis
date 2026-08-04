@@ -44,19 +44,13 @@ def build_delay_analytics(
         .select(
             F.col("f.Year").alias("Year"),
             F.col("f.Month").alias("Month"),
-            F.col("f.MarketingAirlineKey").alias(
-                "MarketingAirlineKey"
-            ),
+            F.col("f.MarketingAirlineKey").alias("MarketingAirlineKey"),
             F.col("a.AirlineCode").alias("AirlineCode"),
             F.col("a.AirlineName").alias("AirlineName"),
             F.col("a.AirlineLabel").alias("AirlineLabel"),
-            F.col("f.PrimaryDelayCause").alias(
-                "PrimaryDelayCause"
-            ),
+            F.col("f.PrimaryDelayCause").alias("PrimaryDelayCause"),
             F.col("f.DelayCategory").alias("DelayCategory"),
-            F.col("f.SeasonIndicator").alias(
-                "SeasonIndicator"
-            ),
+            F.col("f.SeasonIndicator").alias("SeasonIndicator"),
             F.col("f.ArrDel15").alias("ArrDel15"),
             F.col("f.Cancelled").alias("Cancelled"),
             F.col("f.Diverted").alias("Diverted"),
@@ -66,118 +60,88 @@ def build_delay_analytics(
             F.col("f.WeatherDelay").alias("WeatherDelay"),
             F.col("f.NASDelay").alias("NASDelay"),
             F.col("f.SecurityDelay").alias("SecurityDelay"),
-            F.col("f.LateAircraftDelay").alias(
-                "LateAircraftDelay"
-            ),
+            F.col("f.LateAircraftDelay").alias("LateAircraftDelay"),
         )
     )
 
-    aggregated_df = (
-        reporting_df
-        .groupBy(
-            "Year",
-            "Month",
-            "MarketingAirlineKey",
-            "AirlineCode",
-            "AirlineName",
-            "AirlineLabel",
-            "PrimaryDelayCause",
-            "DelayCategory",
-            "SeasonIndicator",
-        )
-        .agg(
-            F.count("*").alias("TotalFlights"),
-            F.sum(
-                F.when(F.col("ArrDel15") == 0, 1).otherwise(0)
-            ).alias("OnTimeFlights"),
-            F.sum(
-                F.when(F.col("ArrDel15") == 1, 1).otherwise(0)
-            ).alias("DelayedFlights"),
-            F.sum(
-                F.when(F.col("Cancelled") == 1, 1).otherwise(0)
-            ).alias("CancelledFlights"),
-            F.sum(
-                F.when(F.col("Diverted") == 1, 1).otherwise(0)
-            ).alias("DivertedFlights"),
-            F.round(F.avg("ArrDelay"), 2).alias(
-                "AvgArrivalDelay"
-            ),
-            F.round(F.avg("DepDelay"), 2).alias(
-                "AvgDepartureDelay"
-            ),
-            F.round(F.avg("CarrierDelay"), 2).alias(
-                "AvgCarrierDelay"
-            ),
-            F.round(F.avg("WeatherDelay"), 2).alias(
-                "AvgWeatherDelay"
-            ),
-            F.round(F.avg("NASDelay"), 2).alias("AvgNASDelay"),
-            F.round(F.avg("SecurityDelay"), 2).alias(
-                "AvgSecurityDelay"
-            ),
-            F.round(F.avg("LateAircraftDelay"), 2).alias(
-                "AvgLateAircraftDelay"
-            ),
-            F.coalesce(
-                F.sum("CarrierDelay"),
-                F.lit(0),
-            ).alias("CarrierDelayMinutes"),
-            F.coalesce(
-                F.sum("WeatherDelay"),
-                F.lit(0),
-            ).alias("WeatherDelayMinutes"),
-            F.coalesce(
-                F.sum("NASDelay"),
-                F.lit(0),
-            ).alias("NASDelayMinutes"),
-            F.coalesce(
-                F.sum("SecurityDelay"),
-                F.lit(0),
-            ).alias("SecurityDelayMinutes"),
-            F.coalesce(
-                F.sum("LateAircraftDelay"),
-                F.lit(0),
-            ).alias("LateAircraftDelayMinutes"),
-            F.coalesce(
-                F.sum("ArrDelay"),
-                F.lit(0),
-            ).alias("TotalArrivalDelayMinutes"),
-            F.coalesce(
-                F.sum("DepDelay"),
-                F.lit(0),
-            ).alias("TotalDepartureDelayMinutes"),
-            F.sum(
-                F.when(
-                    (F.col("ArrDelay") >= 0)
-                    & (F.col("ArrDelay") < 15),
-                    1,
-                ).otherwise(0)
-            ).alias("Delay_0_15"),
-            F.sum(
-                F.when(
-                    (F.col("ArrDelay") >= 15)
-                    & (F.col("ArrDelay") < 30),
-                    1,
-                ).otherwise(0)
-            ).alias("Delay_15_30"),
-            F.sum(
-                F.when(
-                    (F.col("ArrDelay") >= 30)
-                    & (F.col("ArrDelay") < 60),
-                    1,
-                ).otherwise(0)
-            ).alias("Delay_30_60"),
-            F.sum(
-                F.when(
-                    (F.col("ArrDelay") >= 60)
-                    & (F.col("ArrDelay") < 120),
-                    1,
-                ).otherwise(0)
-            ).alias("Delay_60_120"),
-            F.sum(
-                F.when(F.col("ArrDelay") >= 120, 1).otherwise(0)
-            ).alias("Delay_120_Plus"),
-        )
+    aggregated_df = reporting_df.groupBy(
+        "Year",
+        "Month",
+        "MarketingAirlineKey",
+        "AirlineCode",
+        "AirlineName",
+        "AirlineLabel",
+        "PrimaryDelayCause",
+        "DelayCategory",
+        "SeasonIndicator",
+    ).agg(
+        F.count("*").alias("TotalFlights"),
+        F.sum(F.when(F.col("ArrDel15") == 0, 1).otherwise(0)).alias("OnTimeFlights"),
+        F.sum(F.when(F.col("ArrDel15") == 1, 1).otherwise(0)).alias("DelayedFlights"),
+        F.sum(F.when(F.col("Cancelled") == 1, 1).otherwise(0)).alias(
+            "CancelledFlights"
+        ),
+        F.sum(F.when(F.col("Diverted") == 1, 1).otherwise(0)).alias("DivertedFlights"),
+        F.round(F.avg("ArrDelay"), 2).alias("AvgArrivalDelay"),
+        F.round(F.avg("DepDelay"), 2).alias("AvgDepartureDelay"),
+        F.round(F.avg("CarrierDelay"), 2).alias("AvgCarrierDelay"),
+        F.round(F.avg("WeatherDelay"), 2).alias("AvgWeatherDelay"),
+        F.round(F.avg("NASDelay"), 2).alias("AvgNASDelay"),
+        F.round(F.avg("SecurityDelay"), 2).alias("AvgSecurityDelay"),
+        F.round(F.avg("LateAircraftDelay"), 2).alias("AvgLateAircraftDelay"),
+        F.coalesce(
+            F.sum("CarrierDelay"),
+            F.lit(0),
+        ).alias("CarrierDelayMinutes"),
+        F.coalesce(
+            F.sum("WeatherDelay"),
+            F.lit(0),
+        ).alias("WeatherDelayMinutes"),
+        F.coalesce(
+            F.sum("NASDelay"),
+            F.lit(0),
+        ).alias("NASDelayMinutes"),
+        F.coalesce(
+            F.sum("SecurityDelay"),
+            F.lit(0),
+        ).alias("SecurityDelayMinutes"),
+        F.coalesce(
+            F.sum("LateAircraftDelay"),
+            F.lit(0),
+        ).alias("LateAircraftDelayMinutes"),
+        F.coalesce(
+            F.sum("ArrDelay"),
+            F.lit(0),
+        ).alias("TotalArrivalDelayMinutes"),
+        F.coalesce(
+            F.sum("DepDelay"),
+            F.lit(0),
+        ).alias("TotalDepartureDelayMinutes"),
+        F.sum(
+            F.when(
+                (F.col("ArrDelay") >= 0) & (F.col("ArrDelay") < 15),
+                1,
+            ).otherwise(0)
+        ).alias("Delay_0_15"),
+        F.sum(
+            F.when(
+                (F.col("ArrDelay") >= 15) & (F.col("ArrDelay") < 30),
+                1,
+            ).otherwise(0)
+        ).alias("Delay_15_30"),
+        F.sum(
+            F.when(
+                (F.col("ArrDelay") >= 30) & (F.col("ArrDelay") < 60),
+                1,
+            ).otherwise(0)
+        ).alias("Delay_30_60"),
+        F.sum(
+            F.when(
+                (F.col("ArrDelay") >= 60) & (F.col("ArrDelay") < 120),
+                1,
+            ).otherwise(0)
+        ).alias("Delay_60_120"),
+        F.sum(F.when(F.col("ArrDelay") >= 120, 1).otherwise(0)).alias("Delay_120_Plus"),
     )
 
     contribution_window = Window.partitionBy(
@@ -186,13 +150,10 @@ def build_delay_analytics(
         "MarketingAirlineKey",
     )
 
-    total_delayed_in_window = F.sum("DelayedFlights").over(
-        contribution_window
-    )
+    total_delayed_in_window = F.sum("DelayedFlights").over(contribution_window)
 
     return (
-        aggregated_df
-        .withColumn(
+        aggregated_df.withColumn(
             "YearMonth",
             F.concat_ws(
                 "-",
@@ -256,23 +217,19 @@ def build_reliability_analytics(
     fact = fact_flights_df.alias("f")
 
     master_df = (
-        fact
-        .join(
+        fact.join(
             airline,
-            F.col("f.MarketingAirlineKey")
-            == F.col("a.AirlineKey"),
+            F.col("f.MarketingAirlineKey") == F.col("a.AirlineKey"),
             "left",
         )
         .join(
             origin,
-            F.col("f.OriginAirportKey")
-            == F.col("o.AirportKey"),
+            F.col("f.OriginAirportKey") == F.col("o.AirportKey"),
             "left",
         )
         .join(
             destination,
-            F.col("f.DestAirportKey")
-            == F.col("d.AirportKey"),
+            F.col("f.DestAirportKey") == F.col("d.AirportKey"),
             "left",
         )
         .join(
@@ -284,23 +241,13 @@ def build_reliability_analytics(
             # Time and Fact identifiers
             F.col("f.Year").alias("Year"),
             F.col("f.Month").alias("Month"),
-            F.col("f.SeasonIndicator").alias(
-                "SeasonIndicator"
-            ),
-            F.col("f.MarketingAirlineKey").alias(
-                "MarketingAirlineKey"
-            ),
-            F.col("f.OriginAirportKey").alias(
-                "OriginAirportKey"
-            ),
-            F.col("f.DestAirportKey").alias(
-                "DestAirportKey"
-            ),
+            F.col("f.SeasonIndicator").alias("SeasonIndicator"),
+            F.col("f.MarketingAirlineKey").alias("MarketingAirlineKey"),
+            F.col("f.OriginAirportKey").alias("OriginAirportKey"),
+            F.col("f.DestAirportKey").alias("DestAirportKey"),
             F.col("f.RouteKey").alias("RouteKey"),
             # Flight measures
-            F.col("f.CompletedFlightFlag").alias(
-                "CompletedFlightFlag"
-            ),
+            F.col("f.CompletedFlightFlag").alias("CompletedFlightFlag"),
             F.col("f.Cancelled").alias("Cancelled"),
             F.col("f.Diverted").alias("Diverted"),
             F.col("f.ArrDel15").alias("ArrDel15"),
@@ -310,303 +257,172 @@ def build_reliability_analytics(
             F.col("f.WeatherDelay").alias("WeatherDelay"),
             F.col("f.NASDelay").alias("NASDelay"),
             F.col("f.SecurityDelay").alias("SecurityDelay"),
-            F.col("f.LateAircraftDelay").alias(
-                "LateAircraftDelay"
-            ),
+            F.col("f.LateAircraftDelay").alias("LateAircraftDelay"),
             # Airline dimension
             F.col("a.AirlineCode").alias("AirlineCode"),
             F.col("a.AirlineName").alias("AirlineName"),
             F.col("a.AirlineLabel").alias("AirlineLabel"),
-            F.col("a.FlightCount").alias(
-                "AirlineFlightCount"
-            ),
+            F.col("a.FlightCount").alias("AirlineFlightCount"),
             F.col("a.OnTimeRate").alias("AirlineOnTimeRate"),
-            F.col("a.CancellationRate").alias(
-                "AirlineCancellationRate"
-            ),
-            F.col("a.DiversionRate").alias(
-                "AirlineDiversionRate"
-            ),
-            F.col("a.ReliabilityScore").alias(
-                "AirlineReliabilityScore"
-            ),
+            F.col("a.CancellationRate").alias("AirlineCancellationRate"),
+            F.col("a.DiversionRate").alias("AirlineDiversionRate"),
+            F.col("a.ReliabilityScore").alias("AirlineReliabilityScore"),
             # Origin airport dimension
-            F.col("o.AirportCode").alias(
-                "OriginAirportCode"
-            ),
+            F.col("o.AirportCode").alias("OriginAirportCode"),
             F.col("o.CityName").alias("OriginCity"),
             F.col("o.StateCode").alias("OriginStateCode"),
             F.col("o.StateName").alias("OriginState"),
             F.col("o.Region").alias("OriginRegion"),
-            F.col("o.DepartureFlightCount").alias(
-                "OriginDepartureFlightCount"
-            ),
-            F.col("o.ArrivalFlightCount").alias(
-                "OriginArrivalFlightCount"
-            ),
-            F.col("o.DepartureOnTimeRate").alias(
-                "OriginDepartureOnTimeRate"
-            ),
-            F.col("o.ArrivalOnTimeRate").alias(
-                "OriginArrivalOnTimeRate"
-            ),
+            F.col("o.DepartureFlightCount").alias("OriginDepartureFlightCount"),
+            F.col("o.ArrivalFlightCount").alias("OriginArrivalFlightCount"),
+            F.col("o.DepartureOnTimeRate").alias("OriginDepartureOnTimeRate"),
+            F.col("o.ArrivalOnTimeRate").alias("OriginArrivalOnTimeRate"),
             F.col("o.DepartureCancellationRate").alias(
                 "OriginDepartureCancellationRate"
             ),
-            F.col("o.DepartureDiversionRate").alias(
-                "OriginDepartureDiversionRate"
-            ),
-            F.col("o.AverageArrivalDelay").alias(
-                "OriginAverageArrivalDelay"
-            ),
+            F.col("o.DepartureDiversionRate").alias("OriginDepartureDiversionRate"),
+            F.col("o.AverageArrivalDelay").alias("OriginAverageArrivalDelay"),
             F.col("o.DepartureReliabilityScore").alias(
                 "OriginDepartureReliabilityScore"
             ),
-            F.col("o.ArrivalReliabilityScore").alias(
-                "OriginArrivalReliabilityScore"
-            ),
+            F.col("o.ArrivalReliabilityScore").alias("OriginArrivalReliabilityScore"),
             # Destination airport dimension
-            F.col("d.AirportCode").alias(
-                "DestAirportCode"
-            ),
+            F.col("d.AirportCode").alias("DestAirportCode"),
             F.col("d.CityName").alias("DestCity"),
             F.col("d.StateCode").alias("DestStateCode"),
             F.col("d.StateName").alias("DestState"),
             F.col("d.Region").alias("DestRegion"),
-            F.col("d.DepartureFlightCount").alias(
-                "DestDepartureFlightCount"
-            ),
-            F.col("d.ArrivalFlightCount").alias(
-                "DestArrivalFlightCount"
-            ),
-            F.col("d.DepartureOnTimeRate").alias(
-                "DestDepartureOnTimeRate"
-            ),
-            F.col("d.ArrivalOnTimeRate").alias(
-                "DestArrivalOnTimeRate"
-            ),
-            F.col("d.DepartureCancellationRate").alias(
-                "DestDepartureCancellationRate"
-            ),
-            F.col("d.DepartureDiversionRate").alias(
-                "DestDepartureDiversionRate"
-            ),
-            F.col("d.AverageArrivalDelay").alias(
-                "DestAverageArrivalDelay"
-            ),
-            F.col("d.DepartureReliabilityScore").alias(
-                "DestDepartureReliabilityScore"
-            ),
-            F.col("d.ArrivalReliabilityScore").alias(
-                "DestArrivalReliabilityScore"
-            ),
+            F.col("d.DepartureFlightCount").alias("DestDepartureFlightCount"),
+            F.col("d.ArrivalFlightCount").alias("DestArrivalFlightCount"),
+            F.col("d.DepartureOnTimeRate").alias("DestDepartureOnTimeRate"),
+            F.col("d.ArrivalOnTimeRate").alias("DestArrivalOnTimeRate"),
+            F.col("d.DepartureCancellationRate").alias("DestDepartureCancellationRate"),
+            F.col("d.DepartureDiversionRate").alias("DestDepartureDiversionRate"),
+            F.col("d.AverageArrivalDelay").alias("DestAverageArrivalDelay"),
+            F.col("d.DepartureReliabilityScore").alias("DestDepartureReliabilityScore"),
+            F.col("d.ArrivalReliabilityScore").alias("DestArrivalReliabilityScore"),
             # Route dimension
             F.col("r.Route").alias("Route"),
             F.col("r.Origin").alias("RouteOrigin"),
             F.col("r.Dest").alias("RouteDestination"),
             F.col("r.StatePair").alias("StatePair"),
             F.col("r.FlightCount").alias("RouteFlightCount"),
-            F.col("r.AverageDelay").alias(
-                "RouteAverageDelay"
-            ),
+            F.col("r.AverageDelay").alias("RouteAverageDelay"),
             F.col("r.OnTimeRate").alias("RouteOnTimeRate"),
-            F.col("r.CancellationRate").alias(
-                "RouteCancellationRate"
-            ),
-            F.col("r.DiversionRate").alias(
-                "RouteDiversionRate"
-            ),
-            F.col("r.ReliabilityScore").alias(
-                "RouteReliabilityScore"
-            ),
+            F.col("r.CancellationRate").alias("RouteCancellationRate"),
+            F.col("r.DiversionRate").alias("RouteDiversionRate"),
+            F.col("r.ReliabilityScore").alias("RouteReliabilityScore"),
         )
     )
 
-    aggregated_df = (
-        master_df
-        .groupBy(
-            "Year",
-            "Month",
-            "SeasonIndicator",
-            "MarketingAirlineKey",
-            "AirlineCode",
-            "AirlineName",
-            "AirlineLabel",
-            "RouteKey",
-            "Route",
-            "RouteOrigin",
-            "RouteDestination",
-            "StatePair",
-            "OriginAirportKey",
-            "OriginAirportCode",
-            "OriginCity",
-            "OriginStateCode",
-            "OriginState",
-            "OriginRegion",
-            "DestAirportKey",
-            "DestAirportCode",
-            "DestCity",
-            "DestStateCode",
-            "DestState",
-            "DestRegion",
-        )
-        .agg(
-            # Airline descriptive reliability
-            F.first("AirlineFlightCount").alias(
-                "AirlineFlightCount"
-            ),
-            F.first("AirlineOnTimeRate").alias(
-                "AirlineOnTimeRate"
-            ),
-            F.first("AirlineCancellationRate").alias(
-                "AirlineCancellationRate"
-            ),
-            F.first("AirlineDiversionRate").alias(
-                "AirlineDiversionRate"
-            ),
-            F.first("AirlineReliabilityScore").alias(
-                "AirlineReliabilityScore"
-            ),
-            # Route descriptive reliability
-            F.first("RouteFlightCount").alias(
-                "RouteFlightCount"
-            ),
-            F.first("RouteAverageDelay").alias(
-                "RouteAverageDelay"
-            ),
-            F.first("RouteOnTimeRate").alias(
-                "RouteOnTimeRate"
-            ),
-            F.first("RouteCancellationRate").alias(
-                "RouteCancellationRate"
-            ),
-            F.first("RouteDiversionRate").alias(
-                "RouteDiversionRate"
-            ),
-            F.first("RouteReliabilityScore").alias(
-                "RouteReliabilityScore"
-            ),
-            # Origin airport descriptive reliability
-            F.first("OriginDepartureFlightCount").alias(
-                "OriginDepartureFlightCount"
-            ),
-            F.first("OriginArrivalFlightCount").alias(
-                "OriginArrivalFlightCount"
-            ),
-            F.first("OriginDepartureOnTimeRate").alias(
-                "OriginDepartureOnTimeRate"
-            ),
-            F.first("OriginArrivalOnTimeRate").alias(
-                "OriginArrivalOnTimeRate"
-            ),
-            F.first(
-                "OriginDepartureCancellationRate"
-            ).alias("OriginDepartureCancellationRate"),
-            F.first("OriginDepartureDiversionRate").alias(
-                "OriginDepartureDiversionRate"
-            ),
-            F.first("OriginAverageArrivalDelay").alias(
-                "OriginAverageArrivalDelay"
-            ),
-            F.first(
-                "OriginDepartureReliabilityScore"
-            ).alias("OriginDepartureReliabilityScore"),
-            F.first("OriginArrivalReliabilityScore").alias(
-                "OriginArrivalReliabilityScore"
-            ),
-            # Destination airport descriptive reliability
-            F.first("DestDepartureFlightCount").alias(
-                "DestDepartureFlightCount"
-            ),
-            F.first("DestArrivalFlightCount").alias(
-                "DestArrivalFlightCount"
-            ),
-            F.first("DestDepartureOnTimeRate").alias(
-                "DestDepartureOnTimeRate"
-            ),
-            F.first("DestArrivalOnTimeRate").alias(
-                "DestArrivalOnTimeRate"
-            ),
-            F.first(
-                "DestDepartureCancellationRate"
-            ).alias("DestDepartureCancellationRate"),
-            F.first("DestDepartureDiversionRate").alias(
-                "DestDepartureDiversionRate"
-            ),
-            F.first("DestAverageArrivalDelay").alias(
-                "DestAverageArrivalDelay"
-            ),
-            F.first("DestDepartureReliabilityScore").alias(
-                "DestDepartureReliabilityScore"
-            ),
-            F.first("DestArrivalReliabilityScore").alias(
-                "DestArrivalReliabilityScore"
-            ),
-            # Monthly flight KPIs
-            F.count("*").alias("TotalFlights"),
-            F.sum(
-                F.when(
-                    F.col("CompletedFlightFlag") == 1,
-                    1,
-                ).otherwise(0)
-            ).alias("CompletedFlights"),
-            F.sum(
-                F.when(F.col("Cancelled") == 1, 1).otherwise(0)
-            ).alias("CancelledFlights"),
-            F.sum(
-                F.when(F.col("Diverted") == 1, 1).otherwise(0)
-            ).alias("DivertedFlights"),
-            F.sum(
-                F.when(F.col("ArrDel15") == 0, 1).otherwise(0)
-            ).alias("OnTimeFlights"),
-            F.sum(
-                F.when(F.col("ArrDel15") == 1, 1).otherwise(0)
-            ).alias("DelayedFlights"),
-            F.round(F.avg("ArrDelay"), 2).alias(
-                "AvgArrivalDelay"
-            ),
-            F.round(F.avg("DepDelay"), 2).alias(
-                "AvgDepartureDelay"
-            ),
-            F.round(F.avg("CarrierDelay"), 2).alias(
-                "AvgCarrierDelay"
-            ),
-            F.round(F.avg("WeatherDelay"), 2).alias(
-                "AvgWeatherDelay"
-            ),
-            F.round(F.avg("NASDelay"), 2).alias("AvgNASDelay"),
-            F.round(F.avg("SecurityDelay"), 2).alias(
-                "AvgSecurityDelay"
-            ),
-            F.round(F.avg("LateAircraftDelay"), 2).alias(
-                "AvgLateAircraftDelay"
-            ),
-            F.coalesce(
-                F.sum("CarrierDelay"),
-                F.lit(0),
-            ).alias("CarrierDelayMinutes"),
-            F.coalesce(
-                F.sum("WeatherDelay"),
-                F.lit(0),
-            ).alias("WeatherDelayMinutes"),
-            F.coalesce(
-                F.sum("NASDelay"),
-                F.lit(0),
-            ).alias("NASDelayMinutes"),
-            F.coalesce(
-                F.sum("SecurityDelay"),
-                F.lit(0),
-            ).alias("SecurityDelayMinutes"),
-            F.coalesce(
-                F.sum("LateAircraftDelay"),
-                F.lit(0),
-            ).alias("LateAircraftDelayMinutes"),
-        )
+    aggregated_df = master_df.groupBy(
+        "Year",
+        "Month",
+        "SeasonIndicator",
+        "MarketingAirlineKey",
+        "AirlineCode",
+        "AirlineName",
+        "AirlineLabel",
+        "RouteKey",
+        "Route",
+        "RouteOrigin",
+        "RouteDestination",
+        "StatePair",
+        "OriginAirportKey",
+        "OriginAirportCode",
+        "OriginCity",
+        "OriginStateCode",
+        "OriginState",
+        "OriginRegion",
+        "DestAirportKey",
+        "DestAirportCode",
+        "DestCity",
+        "DestStateCode",
+        "DestState",
+        "DestRegion",
+    ).agg(
+        # Airline descriptive reliability
+        F.first("AirlineFlightCount").alias("AirlineFlightCount"),
+        F.first("AirlineOnTimeRate").alias("AirlineOnTimeRate"),
+        F.first("AirlineCancellationRate").alias("AirlineCancellationRate"),
+        F.first("AirlineDiversionRate").alias("AirlineDiversionRate"),
+        F.first("AirlineReliabilityScore").alias("AirlineReliabilityScore"),
+        # Route descriptive reliability
+        F.first("RouteFlightCount").alias("RouteFlightCount"),
+        F.first("RouteAverageDelay").alias("RouteAverageDelay"),
+        F.first("RouteOnTimeRate").alias("RouteOnTimeRate"),
+        F.first("RouteCancellationRate").alias("RouteCancellationRate"),
+        F.first("RouteDiversionRate").alias("RouteDiversionRate"),
+        F.first("RouteReliabilityScore").alias("RouteReliabilityScore"),
+        # Origin airport descriptive reliability
+        F.first("OriginDepartureFlightCount").alias("OriginDepartureFlightCount"),
+        F.first("OriginArrivalFlightCount").alias("OriginArrivalFlightCount"),
+        F.first("OriginDepartureOnTimeRate").alias("OriginDepartureOnTimeRate"),
+        F.first("OriginArrivalOnTimeRate").alias("OriginArrivalOnTimeRate"),
+        F.first("OriginDepartureCancellationRate").alias(
+            "OriginDepartureCancellationRate"
+        ),
+        F.first("OriginDepartureDiversionRate").alias("OriginDepartureDiversionRate"),
+        F.first("OriginAverageArrivalDelay").alias("OriginAverageArrivalDelay"),
+        F.first("OriginDepartureReliabilityScore").alias(
+            "OriginDepartureReliabilityScore"
+        ),
+        F.first("OriginArrivalReliabilityScore").alias("OriginArrivalReliabilityScore"),
+        # Destination airport descriptive reliability
+        F.first("DestDepartureFlightCount").alias("DestDepartureFlightCount"),
+        F.first("DestArrivalFlightCount").alias("DestArrivalFlightCount"),
+        F.first("DestDepartureOnTimeRate").alias("DestDepartureOnTimeRate"),
+        F.first("DestArrivalOnTimeRate").alias("DestArrivalOnTimeRate"),
+        F.first("DestDepartureCancellationRate").alias("DestDepartureCancellationRate"),
+        F.first("DestDepartureDiversionRate").alias("DestDepartureDiversionRate"),
+        F.first("DestAverageArrivalDelay").alias("DestAverageArrivalDelay"),
+        F.first("DestDepartureReliabilityScore").alias("DestDepartureReliabilityScore"),
+        F.first("DestArrivalReliabilityScore").alias("DestArrivalReliabilityScore"),
+        # Monthly flight KPIs
+        F.count("*").alias("TotalFlights"),
+        F.sum(
+            F.when(
+                F.col("CompletedFlightFlag") == 1,
+                1,
+            ).otherwise(0)
+        ).alias("CompletedFlights"),
+        F.sum(F.when(F.col("Cancelled") == 1, 1).otherwise(0)).alias(
+            "CancelledFlights"
+        ),
+        F.sum(F.when(F.col("Diverted") == 1, 1).otherwise(0)).alias("DivertedFlights"),
+        F.sum(F.when(F.col("ArrDel15") == 0, 1).otherwise(0)).alias("OnTimeFlights"),
+        F.sum(F.when(F.col("ArrDel15") == 1, 1).otherwise(0)).alias("DelayedFlights"),
+        F.round(F.avg("ArrDelay"), 2).alias("AvgArrivalDelay"),
+        F.round(F.avg("DepDelay"), 2).alias("AvgDepartureDelay"),
+        F.round(F.avg("CarrierDelay"), 2).alias("AvgCarrierDelay"),
+        F.round(F.avg("WeatherDelay"), 2).alias("AvgWeatherDelay"),
+        F.round(F.avg("NASDelay"), 2).alias("AvgNASDelay"),
+        F.round(F.avg("SecurityDelay"), 2).alias("AvgSecurityDelay"),
+        F.round(F.avg("LateAircraftDelay"), 2).alias("AvgLateAircraftDelay"),
+        F.coalesce(
+            F.sum("CarrierDelay"),
+            F.lit(0),
+        ).alias("CarrierDelayMinutes"),
+        F.coalesce(
+            F.sum("WeatherDelay"),
+            F.lit(0),
+        ).alias("WeatherDelayMinutes"),
+        F.coalesce(
+            F.sum("NASDelay"),
+            F.lit(0),
+        ).alias("NASDelayMinutes"),
+        F.coalesce(
+            F.sum("SecurityDelay"),
+            F.lit(0),
+        ).alias("SecurityDelayMinutes"),
+        F.coalesce(
+            F.sum("LateAircraftDelay"),
+            F.lit(0),
+        ).alias("LateAircraftDelayMinutes"),
     )
 
     return (
-        aggregated_df
-        .withColumn(
+        aggregated_df.withColumn(
             "YearMonth",
             F.concat_ws(
                 "-",

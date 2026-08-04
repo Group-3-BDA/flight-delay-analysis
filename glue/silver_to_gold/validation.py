@@ -27,21 +27,21 @@ def validate_fact(
         "RouteKey",
     ]
 
-    null_counts = fact_df.select(
-        *[
-            F.sum(
-                F.when(F.col(column_name).isNull(), 1).otherwise(0)
-            ).alias(column_name)
-            for column_name in key_columns
-        ]
-    ).collect()[0].asDict()
+    null_counts = (
+        fact_df.select(
+            *[
+                F.sum(F.when(F.col(column_name).isNull(), 1).otherwise(0)).alias(
+                    column_name
+                )
+                for column_name in key_columns
+            ]
+        )
+        .collect()[0]
+        .asDict()
+    )
 
     invalid = {
-        key: value
-        for key, value in null_counts.items()
-        if value not in (None, 0)
+        key: value for key, value in null_counts.items() if value not in (None, 0)
     }
     if invalid:
-        raise ValueError(
-            "Required Gold keys contain null values: {}".format(invalid)
-        )
+        raise ValueError("Required Gold keys contain null values: {}".format(invalid))

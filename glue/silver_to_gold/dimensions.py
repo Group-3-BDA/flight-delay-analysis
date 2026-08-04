@@ -13,38 +13,26 @@ def _reliability_score(
         100
         * (
             0.70 * F.coalesce(on_time_rate, F.lit(0.0))
-            + 0.20
-            * (
-                1
-                - F.coalesce(cancellation_rate, F.lit(0.0))
-            )
-            + 0.10
-            * (
-                1
-                - F.coalesce(diversion_rate, F.lit(0.0))
-            )
+            + 0.20 * (1 - F.coalesce(cancellation_rate, F.lit(0.0)))
+            + 0.10 * (1 - F.coalesce(diversion_rate, F.lit(0.0)))
         ),
         2,
     )
 
 
 def build_dim_date(gold_base_df: DataFrame) -> DataFrame:
-    return (
-        gold_base_df
-        .select(
-            "DateKey",
-            "FlightDate",
-            "Year",
-            "Quarter",
-            "Month",
-            "DayofMonth",
-            "DayOfWeek",
-            "WeekendIndicator",
-            "SeasonIndicator",
-            "YearMonth",
-        )
-        .dropDuplicates(["DateKey"])
-    )
+    return gold_base_df.select(
+        "DateKey",
+        "FlightDate",
+        "Year",
+        "Quarter",
+        "Month",
+        "DayofMonth",
+        "DayOfWeek",
+        "WeekendIndicator",
+        "SeasonIndicator",
+        "YearMonth",
+    ).dropDuplicates(["DateKey"])
 
 
 def build_dim_airline(gold_base_df: DataFrame) -> DataFrame:
@@ -63,25 +51,17 @@ def build_dim_airline(gold_base_df: DataFrame) -> DataFrame:
     )
 
     master = (
-        marketing
-        .unionByName(operating)
+        marketing.unionByName(operating)
         .filter(F.col("AirlineCode").isNotNull())
         .groupBy("AirlineKey", "AirlineCode")
         .agg(
-            F.first("AirlineName", ignorenulls=True).alias(
-                "AirlineName"
-            ),
-            F.first("AirlineLabel", ignorenulls=True).alias(
-                "AirlineLabel"
-            ),
+            F.first("AirlineName", ignorenulls=True).alias("AirlineName"),
+            F.first("AirlineLabel", ignorenulls=True).alias("AirlineLabel"),
         )
     )
 
     stats = (
-        gold_base_df
-        .groupBy(
-            F.col("MarketingAirlineKey").alias("AirlineKey")
-        )
+        gold_base_df.groupBy(F.col("MarketingAirlineKey").alias("AirlineKey"))
         .agg(
             F.count("*").alias("FlightCount"),
             F.avg(
@@ -118,25 +98,19 @@ def build_dim_airline(gold_base_df: DataFrame) -> DataFrame:
         )
     )
 
-    return (
-        master
-        .join(stats, on="AirlineKey", how="left")
-        .select(
-            "AirlineKey",
-            "AirlineCode",
-            "AirlineName",
-            "AirlineLabel",
-            F.coalesce(
-                F.col("FlightCount"),
-                F.lit(0),
-            ).alias("FlightCount"),
-            F.round("OnTimeRate", 4).alias("OnTimeRate"),
-            F.round("CancellationRate", 4).alias(
-                "CancellationRate"
-            ),
-            F.round("DiversionRate", 4).alias("DiversionRate"),
-            "ReliabilityScore",
-        )
+    return master.join(stats, on="AirlineKey", how="left").select(
+        "AirlineKey",
+        "AirlineCode",
+        "AirlineName",
+        "AirlineLabel",
+        F.coalesce(
+            F.col("FlightCount"),
+            F.lit(0),
+        ).alias("FlightCount"),
+        F.round("OnTimeRate", 4).alias("OnTimeRate"),
+        F.round("CancellationRate", 4).alias("CancellationRate"),
+        F.round("DiversionRate", 4).alias("DiversionRate"),
+        "ReliabilityScore",
     )
 
 
@@ -160,32 +134,23 @@ def build_dim_airport(gold_base_df: DataFrame) -> DataFrame:
     )
 
     master = (
-        origin
-        .unionByName(destination)
+        origin.unionByName(destination)
         .groupBy("AirportKey", "AirportCode")
         .agg(
             F.first("CityName", ignorenulls=True).alias("CityName"),
-            F.first("StateCode", ignorenulls=True).alias(
-                "StateCode"
-            ),
-            F.first("StateName", ignorenulls=True).alias(
-                "StateName"
-            ),
+            F.first("StateCode", ignorenulls=True).alias("StateCode"),
+            F.first("StateName", ignorenulls=True).alias("StateName"),
             F.first("Region", ignorenulls=True).alias("Region"),
         )
     )
 
     departure_stats = (
-        gold_base_df
-        .groupBy(
-            F.col("OriginAirportKey").alias("AirportKey")
-        )
+        gold_base_df.groupBy(F.col("OriginAirportKey").alias("AirportKey"))
         .agg(
             F.count("*").alias("DepartureFlightCount"),
             F.avg(
                 F.when(
-                    (F.col("Cancelled") == 0)
-                    & F.col("DepDelay").isNotNull(),
+                    (F.col("Cancelled") == 0) & F.col("DepDelay").isNotNull(),
                     F.when(
                         F.col("DepDelay") <= 15,
                         1.0,
@@ -216,10 +181,7 @@ def build_dim_airport(gold_base_df: DataFrame) -> DataFrame:
     )
 
     arrival_stats = (
-        gold_base_df
-        .groupBy(
-            F.col("DestAirportKey").alias("AirportKey")
-        )
+        gold_base_df.groupBy(F.col("DestAirportKey").alias("AirportKey"))
         .agg(
             F.count("*").alias("ArrivalFlightCount"),
             F.avg(
@@ -252,8 +214,7 @@ def build_dim_airport(gold_base_df: DataFrame) -> DataFrame:
     )
 
     return (
-        master
-        .join(departure_stats, on="AirportKey", how="left")
+        master.join(departure_stats, on="AirportKey", how="left")
         .join(arrival_stats, on="AirportKey", how="left")
         .select(
             "AirportKey",
@@ -295,8 +256,7 @@ def build_dim_airport(gold_base_df: DataFrame) -> DataFrame:
 
 def build_dim_route(gold_base_df: DataFrame) -> DataFrame:
     return (
-        gold_base_df
-        .groupBy(
+        gold_base_df.groupBy(
             "RouteKey",
             "Route",
             "Origin",
@@ -347,9 +307,7 @@ def build_dim_route(gold_base_df: DataFrame) -> DataFrame:
             "FlightCount",
             "AverageDelay",
             F.round("OnTimeRate", 4).alias("OnTimeRate"),
-            F.round("CancellationRate", 4).alias(
-                "CancellationRate"
-            ),
+            F.round("CancellationRate", 4).alias("CancellationRate"),
             F.round("DiversionRate", 4).alias("DiversionRate"),
             "ReliabilityScore",
         )

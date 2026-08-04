@@ -41,11 +41,7 @@ def _glue_arguments():
         "SHUFFLE_PARTITIONS",
     ]
 
-    present = [
-        name
-        for name in optional
-        if "--{}".format(name) in sys.argv
-    ]
+    present = [name for name in optional if "--{}".format(name) in sys.argv]
 
     args = getResolvedOptions(sys.argv, required + present)
     return {
@@ -59,9 +55,7 @@ def _glue_arguments():
         ),
         "validation_year": int(args.get("VALIDATION_YEAR", 2024)),
         "test_year": int(args.get("TEST_YEAR", 2025)),
-        "shuffle_partitions": int(
-            args.get("SHUFFLE_PARTITIONS", 64)
-        ),
+        "shuffle_partitions": int(args.get("SHUFFLE_PARTITIONS", 64)),
         "is_glue": True,
     }
 
@@ -96,34 +90,21 @@ def _parse_arguments():
 
 
 def run_pipeline(spark, config):
-    silver_df = (
-        spark.read
-        .parquet(config.input_path)
-        .repartition(config.shuffle_partitions)
+    silver_df = spark.read.parquet(config.input_path).repartition(
+        config.shuffle_partitions
     )
 
-    gold_base_df = (
-        build_gold_base(silver_df)
-        .persist(StorageLevel.DISK_ONLY)
-    )
+    gold_base_df = build_gold_base(silver_df).persist(StorageLevel.DISK_ONLY)
 
     cached_dimensions = []
 
-    print(
-        "Gold Base target partitions: {}".format(
-            config.shuffle_partitions
-        )
-    )
+    print("Gold Base target partitions: {}".format(config.shuffle_partitions))
     print("Gold Base persisted. Triggering materialization...")
 
     gold_base_count = gold_base_df.count()
 
     print("Gold Base Row Count:", gold_base_count)
-    print(
-        "Gold Base materialized successfully. Rows = {}".format(
-            gold_base_count
-        )
-    )
+    print("Gold Base materialized successfully. Rows = {}".format(gold_base_count))
 
     try:
         print("Building DIM_DATE...")
@@ -184,9 +165,7 @@ def run_pipeline(spark, config):
             dim_route_df=dim_route_df,
             ml_dataset_df=ml_dataset_df,
             viz_delay_analytics_df=viz_delay_analytics_df,
-            viz_reliability_analytics_df=(
-                viz_reliability_analytics_df
-            ),
+            viz_reliability_analytics_df=(viz_reliability_analytics_df),
             config=config,
         )
 
@@ -210,11 +189,7 @@ def run_pipeline(spark, config):
 def main():
     arguments = _parse_arguments()
 
-    spark = (
-        SparkSession.builder
-        .appName(arguments["job_name"])
-        .getOrCreate()
-    )
+    spark = SparkSession.builder.appName(arguments["job_name"]).getOrCreate()
 
     print("Python executable:", sys.executable)
     print("Spark version:", spark.version)

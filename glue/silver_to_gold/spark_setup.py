@@ -19,9 +19,7 @@ def configure_spark(spark: SparkSession, config) -> None:
         str(config.max_partition_bytes),
     )
 
-    version_parts = tuple(
-        int(part) for part in spark.version.split(".")[:2]
-    )
+    version_parts = tuple(int(part) for part in spark.version.split(".")[:2])
 
     if version_parts >= (3, 0):
         spark.conf.set("spark.sql.adaptive.enabled", "true")

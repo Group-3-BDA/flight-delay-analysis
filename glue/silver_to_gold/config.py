@@ -12,7 +12,7 @@ class PipelineConfig:
         test_year=2025,
         shuffle_partitions=64,
         broadcast_timeout_seconds=900,
-        max_partition_bytes=128 * 1024 * 1024
+        max_partition_bytes=128 * 1024 * 1024,
     ):
         self.input_path = input_path
         self.gold_base_path = gold_base_path
@@ -50,15 +50,8 @@ class PipelineConfig:
 
     @property
     def viz_delay_analytics_path(self):
-        return (
-            self.gold_base_path.rstrip("/")
-            + "/VIZ_DELAY_ANALYTICS/"
-        )
+        return self.gold_base_path.rstrip("/") + "/VIZ_DELAY_ANALYTICS/"
 
     @property
     def viz_reliability_analytics_path(self):
-        return (
-            self.gold_base_path.rstrip("/")
-            + "/VIZ_RELIABILITY_ANALYTICS/"
-        )
-
+        return self.gold_base_path.rstrip("/") + "/VIZ_RELIABILITY_ANALYTICS/"

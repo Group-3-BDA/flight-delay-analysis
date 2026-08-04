@@ -18,17 +18,14 @@ from utils import (
     standardize_column_names,
     convert_datatypes,
     validate_dataframe,
-    write_silver
+    write_silver,
 )
 
 # ==========================================================
 # LOGGER CONFIGURATION
 # ==========================================================
 
-logging.basicConfig(
-    level=getattr(logging, config.LOG_LEVEL),
-    format=config.LOG_FORMAT
-)
+logging.basicConfig(level=getattr(logging, config.LOG_LEVEL), format=config.LOG_FORMAT)
 
 logger = logging.getLogger(__name__)
 
@@ -36,21 +33,15 @@ logger = logging.getLogger(__name__)
 # CREATE SPARK SESSION
 # ==========================================================
 
+
 def create_spark_session():
 
     logger.info("Creating Spark Session...")
 
     spark = (
-        SparkSession.builder
-        .appName(config.APP_NAME)
-        .config(
-            "spark.sql.shuffle.partitions",
-            config.SHUFFLE_PARTITIONS
-        )
-        .config(
-            "spark.sql.adaptive.enabled",
-            str(config.ADAPTIVE_EXECUTION).lower()
-        )
+        SparkSession.builder.appName(config.APP_NAME)
+        .config("spark.sql.shuffle.partitions", config.SHUFFLE_PARTITIONS)
+        .config("spark.sql.adaptive.enabled", str(config.ADAPTIVE_EXECUTION).lower())
         .getOrCreate()
     )
 
@@ -63,13 +54,13 @@ def create_spark_session():
 # READ BRONZE DATA
 # ==========================================================
 
+
 def read_bronze_data(spark):
 
     logger.info("Reading Bronze Dataset...")
 
     bronze_df = (
-        spark.read
-        .format(config.READ_FORMAT)
+        spark.read.format(config.READ_FORMAT)
         .options(**config.CSV_OPTIONS)
         .load(config.BRONZE_PATHS)
     )
@@ -82,6 +73,7 @@ def read_bronze_data(spark):
 # ==========================================================
 # MAIN FUNCTION
 # ==========================================================
+
 
 def main():
 
@@ -103,18 +95,10 @@ def main():
         bronze_df = standardize_column_names(bronze_df)
 
         # Step 2 - Select required columns
-        silver_df = select_required_columns(
-            bronze_df,
-            config.REQUIRED_COLUMNS
-        )
-
-        
+        silver_df = select_required_columns(bronze_df, config.REQUIRED_COLUMNS)
 
         # Step 3 - Convert datatypes
-        silver_df = convert_datatypes(
-            silver_df,
-            config.DATATYPE_MAPPING
-        )
+        silver_df = convert_datatypes(silver_df, config.DATATYPE_MAPPING)
 
         # Step 4 - Validate dataframe
         if validate_dataframe(silver_df):
@@ -122,10 +106,7 @@ def main():
             logger.info("Validation Successful")
 
             # Step 5 - Write Silver layer
-            write_silver(
-                silver_df,
-                config.SILVER_PATH
-            )
+            write_silver(silver_df, config.SILVER_PATH)
 
         else:
 
