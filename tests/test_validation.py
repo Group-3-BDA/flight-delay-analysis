@@ -1,6 +1,18 @@
 from pyspark.sql import SparkSession
 import pytest
 
+from pyspark.sql.types import (
+    StructType,
+    StructField,
+    StringType,
+    IntegerType,
+)
+
+
+
+
+
+
 from glue.silver_to_gold.validation import validate_fact
 
 spark = (
@@ -92,9 +104,19 @@ def test_validate_fact_null_key_failure():
         "OriginAirportKey",
         "DestAirportKey",
         "RouteKey",
-    ]
+    ]    
+    schema = StructType([
+        StructField("FlightKey", StringType(), True),
+        StructField("DateKey", IntegerType(), True),
+        StructField("MarketingAirlineKey", StringType(), True),
+        StructField("OperatingAirlineKey", StringType(), True),
+        StructField("OriginAirportKey", StringType(), True),
+        StructField("DestAirportKey", StringType(), True),
+        StructField("RouteKey", StringType(), True),
+    ])
 
-    df = spark.createDataFrame(data, columns)
+    df = spark.createDataFrame(data, schema)
+
 
     with pytest.raises(ValueError):
         validate_fact(df, 1)
