@@ -2,11 +2,11 @@ name: Flight Delay CI/CD Pipeline
 
 on:
   workflow_dispatch:
-  
+
 concurrency:
   group: flight-delay-pipeline
   cancel-in-progress: false
-  
+
 jobs:
   deploy:
     name: Deploy Flight Delay Pipeline
@@ -107,5 +107,101 @@ jobs:
 
     - name: Trigger Glue Workflow
       run: |
+        echo "Starting Glue Workflow..."
         aws glue start-workflow-run \
           --name flight-delay-workflow
+
+    ############################################################
+    # Wait for Bronze Job
+    ############################################################
+
+    - name: Wait for Bronze Job
+      run: |
+        echo "Waiting for Bronze Job..."
+
+        while true
+        do
+          STATUS=$(aws glue get-job-runs \
+            --job-name bronze-to-silver-glue-test \
+            --max-results 1 \
+            --query "JobRuns[0].JobRunState" \
+            --output text)
+
+          echo "Bronze Job Status: $STATUS"
+
+          if [ "$STATUS" = "SUCCEEDED" ]; then
+            echo "Bronze Job completed successfully."
+            break
+          fi
+
+          if [ "$STATUS" = "FAILED" ] || \
+             [ "$STATUS" = "TIMEOUT" ] || \
+             [ "$STATUS" = "STOPPED" ]; then
+            echo "Bronze Job failed."
+            exit 1
+          fi
+
+          sleep 30
+        done
+
+    ############################################################
+    # Wait for Silver Job
+    ############################################################
+
+    - name: Wait for Silver Job
+      run: |
+        echo "Waiting for Silver Job..."
+
+        while true
+        do
+          STATUS=$(aws glue get-job-runs \
+            --job-name Silver_to_Gold_test \
+            --max-results 1 \
+            --query "JobRuns[0].JobRunState" \
+            --output text)
+
+          echo "Silver Job Status: $STATUS"
+
+          if [ "$STATUS" = "SUCCEEDED" ]; then
+            echo "Silver Job completed successfully."
+            break
+          fi
+
+          if [ "$STATUS" = "FAILED" ] || \
+             [ "$STATUS" = "TIMEOUT" ] || \
+             [ "$STATUS" = "STOPPED" ]; then
+            echo "Silver Job failed."
+            exit 1
+          fi
+
+          sleep 30
+        done
+
+    ############################################################
+    # Verify Gold Output
+    ############################################################
+
+    - name: Verify Gold Output
+      run: |
+        echo "Checking Gold Bucket..."
+
+        FILE_COUNT=$(aws s3 ls s3://gold-demo12/Gold_Glue_Test/ --recursive | wc -l)
+
+        echo "Files Found: $FILE_COUNT"
+
+        if [ "$FILE_COUNT" -eq 0 ]; then
+          echo "Gold bucket is empty!"
+          exit 1
+        fi
+
+        echo "Gold bucket verification successful."
+
+    ############################################################
+    # Deployment Complete
+    ############################################################
+
+    - name: Deployment Complete
+      run: |
+        echo "======================================"
+        echo "Flight Delay ETL Pipeline Completed!"
+        echo "======================================"
