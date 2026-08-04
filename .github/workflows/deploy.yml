@@ -14,8 +14,16 @@ jobs:
 
     steps:
 
+    ############################################################
+    # Checkout Repository
+    ############################################################
+
     - name: Checkout Repository
       uses: actions/checkout@v4
+
+    ############################################################
+    # Configure AWS Credentials
+    ############################################################
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -24,6 +32,10 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
         aws-region: us-east-1
+
+    ############################################################
+    # Setup Terraform
+    ############################################################
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
@@ -58,24 +70,24 @@ jobs:
           writers.py
 
     ############################################################
-    # Upload Bronze Files
+    # Upload Bronze Scripts
     ############################################################
 
     - name: Upload Bronze Scripts to S3
       run: |
         aws s3 sync glue/bronze_to_silver \
-        s3://${{ secrets.S3_BUCKET_NAME }}/glue/bronze_to_silver \
-        --delete
+          s3://${{ secrets.S3_BUCKET_NAME }}/glue/bronze_to_silver \
+          --delete
 
     ############################################################
-    # Upload Silver Files
+    # Upload Silver Scripts
     ############################################################
 
     - name: Upload Silver Scripts to S3
       run: |
         aws s3 sync glue/silver_to_gold \
-        s3://${{ secrets.S3_BUCKET_NAME }}/glue/silver_to_gold \
-        --delete
+          s3://${{ secrets.S3_BUCKET_NAME }}/glue/silver_to_gold \
+          --delete
 
     ############################################################
     # Terraform
@@ -107,70 +119,41 @@ jobs:
 
     - name: Trigger Glue Workflow
       run: |
-        echo "Starting Glue Workflow..."
-        aws glue start-workflow-run \
-          --name flight-delay-workflow
+        RUN_ID=$(aws glue start-workflow-run \
+          --name flight-delay-workflow \
+          --query "RunId" \
+          --output text)
+
+        echo "Workflow Run ID: $RUN_ID"
+
+        echo "WORKFLOW_RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
     ############################################################
-    # Wait for Bronze Job
+    # Wait for Glue Workflow to Complete
     ############################################################
 
-    - name: Wait for Bronze Job
+    - name: Wait for Glue Workflow
       run: |
-        echo "Waiting for Bronze Job..."
+        echo "Waiting for Glue Workflow to complete..."
 
         while true
         do
-          STATUS=$(aws glue get-job-runs \
-            --job-name bronze-to-silver-glue-test \
-            --max-results 1 \
-            --query "JobRuns[0].JobRunState" \
+          STATUS=$(aws glue get-workflow-run \
+            --name flight-delay-workflow \
+            --run-id "$WORKFLOW_RUN_ID" \
+            --query "Run.Status" \
             --output text)
 
-          echo "Bronze Job Status: $STATUS"
+          echo "Workflow Status: $STATUS"
 
-          if [ "$STATUS" = "SUCCEEDED" ]; then
-            echo "Bronze Job completed successfully."
+          if [ "$STATUS" = "COMPLETED" ]; then
+            echo "Glue Workflow completed successfully."
             break
           fi
 
-          if [ "$STATUS" = "FAILED" ] || \
-             [ "$STATUS" = "TIMEOUT" ] || \
+          if [ "$STATUS" = "ERROR" ] || \
              [ "$STATUS" = "STOPPED" ]; then
-            echo "Bronze Job failed."
-            exit 1
-          fi
-
-          sleep 30
-        done
-
-    ############################################################
-    # Wait for Silver Job
-    ############################################################
-
-    - name: Wait for Silver Job
-      run: |
-        echo "Waiting for Silver Job..."
-
-        while true
-        do
-          STATUS=$(aws glue get-job-runs \
-            --job-name Silver_to_Gold_test \
-            --max-results 1 \
-            --query "JobRuns[0].JobRunState" \
-            --output text)
-
-          echo "Silver Job Status: $STATUS"
-
-          if [ "$STATUS" = "SUCCEEDED" ]; then
-            echo "Silver Job completed successfully."
-            break
-          fi
-
-          if [ "$STATUS" = "FAILED" ] || \
-             [ "$STATUS" = "TIMEOUT" ] || \
-             [ "$STATUS" = "STOPPED" ]; then
-            echo "Silver Job failed."
+            echo "Glue Workflow failed."
             exit 1
           fi
 
@@ -183,18 +166,25 @@ jobs:
 
     - name: Verify Gold Output
       run: |
-        echo "Checking Gold Bucket..."
+        echo "Checking Gold bucket..."
 
-        FILE_COUNT=$(aws s3 ls s3://gold-demo12/Gold_Glue_Test/ --recursive | wc -l)
+        for i in {1..12}
+        do
+          FILE_COUNT=$(aws s3 ls s3://gold-demo12/Gold_Glue_Test/ --recursive | wc -l)
 
-        echo "Files Found: $FILE_COUNT"
+          echo "Attempt $i - Files Found: $FILE_COUNT"
 
-        if [ "$FILE_COUNT" -eq 0 ]; then
-          echo "Gold bucket is empty!"
-          exit 1
-        fi
+          if [ "$FILE_COUNT" -gt 0 ]; then
+            echo "Gold output verified successfully."
+            exit 0
+          fi
 
-        echo "Gold bucket verification successful."
+          echo "Waiting 10 seconds before checking again..."
+          sleep 10
+        done
+
+        echo "Gold bucket is still empty after waiting."
+        exit 1
 
     ############################################################
     # Deployment Complete
