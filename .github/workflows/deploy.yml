@@ -82,7 +82,10 @@ jobs:
 
     - name: Run Flake8
       run: |
-        flake8 glue tests
+        flake8 \
+          --max-line-length=88 \
+          --extend-ignore=E203,W503 \
+          glue tests
     ############################################################
     # Create Bronze Dependency ZIP
     ############################################################
