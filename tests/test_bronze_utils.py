@@ -8,12 +8,7 @@ from glue.bronze_to_silver.utils import (
     validate_dataframe,
 )
 
-spark = (
-    SparkSession.builder
-    .master("local[1]")
-    .appName("unit-test")
-    .getOrCreate()
-)
+spark = SparkSession.builder.master("local[1]").appName("unit-test").getOrCreate()
 
 
 def test_select_required_columns():
@@ -67,6 +62,7 @@ def test_convert_datatypes():
 
     assert dict(result.dtypes)["FlightDate"] == "date"
 
+
 def test_validate_dataframe_success():
     df = spark.createDataFrame(
         [(1,)],
@@ -74,5 +70,3 @@ def test_validate_dataframe_success():
     )
 
     validate_dataframe(df)
-
-

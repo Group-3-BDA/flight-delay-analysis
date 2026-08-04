@@ -11,8 +11,7 @@ from glue.silver_to_gold.transformations import (
 )
 
 spark = (
-    SparkSession.builder
-    .master("local[1]")
+    SparkSession.builder.master("local[1]")
     .appName("transformations-test")
     .getOrCreate()
 )
