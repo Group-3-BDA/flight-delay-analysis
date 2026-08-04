@@ -73,3 +73,52 @@ resource "aws_glue_job" "silver_job" {
     max_concurrent_runs = 1
   }
 }
+
+
+
+
+
+
+############################################################
+# Glue Catalog Database
+############################################################
+
+resource "aws_glue_catalog_database" "flight_gold" {
+  name        = "flight_gold"
+  description = "Glue Catalog database for Flight Delay Gold layer"
+}
+
+
+
+
+############################################################
+# Glue Crawler
+############################################################
+
+resource "aws_glue_crawler" "flight_gold_crawler" {
+
+  name          = "flight-gold-crawler"
+  role          = var.glue_role_arn
+  database_name = aws_glue_catalog_database.flight_gold.name
+
+  s3_target {
+    path = "s3://${var.gold_bucket_name}/Gold_Glue_Test/"
+  }
+
+  schema_change_policy {
+    update_behavior = "UPDATE_IN_DATABASE"
+    delete_behavior = "LOG"
+  }
+
+  recrawl_policy {
+    recrawl_behavior = "CRAWL_EVERYTHING"
+  }
+}
+
+
+
+
+
+
+
+
