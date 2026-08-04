@@ -50,8 +50,8 @@ jobs:
       uses: hashicorp/setup-terraform@v3
 
     ############################################################
-# Install Test Dependencies
-############################################################
+      # Install Test Dependencies
+    ############################################################
 
     - name: Install Test Dependencies
       run: |
