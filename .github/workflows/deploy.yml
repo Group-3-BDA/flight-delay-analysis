@@ -67,7 +67,22 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/glue/silver_to_gold
       run: |
         pytest tests -v
+        
+    ############################################################
+     # Check Code Formatting
+    ############################################################
 
+    - name: Check Code Formatting
+      run: |
+        black --check glue tests
+
+    ############################################################
+      # Run Flake8
+    ############################################################
+
+    - name: Run Flake8
+      run: |
+        flake8 glue tests
     ############################################################
     # Create Bronze Dependency ZIP
     ############################################################
