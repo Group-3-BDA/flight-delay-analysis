@@ -22,6 +22,15 @@ jobs:
       uses: actions/checkout@v4
 
     ############################################################
+    # Setup Python
+    ############################################################
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    ############################################################
     # Configure AWS Credentials
     ############################################################
 
@@ -39,6 +48,25 @@ jobs:
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
+
+    ############################################################
+    # Install Test Dependencies
+    ############################################################
+
+    - name: Install Test Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pyspark
+
+    ############################################################
+    # Run Unit Tests
+    ############################################################
+
+    - name: Run Unit Tests
+      env:
+        PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/glue/silver_to_gold
+      run: |
+        pytest tests -v
 
     ############################################################
     # Create Bronze Dependency ZIP
@@ -88,24 +116,7 @@ jobs:
         aws s3 sync glue/silver_to_gold \
           s3://${{ secrets.S3_BUCKET_NAME }}/glue/silver_to_gold \
           --delete
-    ############################################################
-    # Install Test Dependencies
-    ############################################################
 
-    - name: Install Test Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest pyspark
-
-    ############################################################
-    # Run Unit Tests
-    ############################################################
-
-    - name: Run Unit Tests
-      env:
-        PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/glue/silver_to_gold
-      run: |
-        pytest tests -v
     ############################################################
     # Terraform
     ############################################################
