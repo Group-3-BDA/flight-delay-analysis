@@ -2,10 +2,7 @@ import os
 import boto3
 import time
 
-CRAWLER_NAME = os.environ.get(
-    "CRAWLER_NAME",
-    "flight-gold-crawler"
-)
+CRAWLER_NAME = os.environ.get("CRAWLER_NAME", "flight-gold-crawler")
 
 glue = boto3.client("glue")
 
@@ -40,6 +37,7 @@ def wait_for_completion():
         elapsed += 15
 
     raise TimeoutError("Crawler execution timed out.")
+
 
 def main():
 
