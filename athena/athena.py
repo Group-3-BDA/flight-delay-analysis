@@ -2,6 +2,13 @@ import os
 import time
 import boto3
 
+CRAWLER_NAME = os.environ.get(
+    "CRAWLER_NAME",
+    "flight-gold-crawler"
+)
+
+glue = boto3.client("glue")
+
 DATABASE = os.environ.get("ATHENA_DATABASE", "flight_gold")
 WORKGROUP = os.environ.get("ATHENA_WORKGROUP", "primary")
 
