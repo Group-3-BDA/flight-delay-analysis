@@ -1,7 +1,11 @@
+import os
 import boto3
 import time
 
-CRAWLER_NAME = "flight-gold-crawler"
+CRAWLER_NAME = os.environ.get(
+    "CRAWLER_NAME",
+    "flight-gold-crawler"
+)
 
 glue = boto3.client("glue")
 
