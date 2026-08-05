@@ -56,7 +56,7 @@ jobs:
     - name: Install Test Dependencies
       run: |
           python -m pip install --upgrade pip
-           pip install pytest pyspark black flake8
+          pip install pytest pyspark black flake8 boto3
 
     ############################################################
     # Run Unit Tests
@@ -134,6 +134,33 @@ jobs:
         aws s3 sync glue/silver_to_gold \
           s3://${{ secrets.S3_BUCKET_NAME }}/glue/silver_to_gold \
           --delete
+    ############################################################
+    # Upload Crawler Scripts
+    ############################################################
+
+    - name: Upload Crawler Scripts to S3
+      run: |
+        aws s3 sync glue/crawler \
+          s3://${{ secrets.S3_BUCKET_NAME }}/glue/crawler \
+          --delete
+
+    ############################################################
+    # Upload Athena SQL Files
+    ############################################################
+
+    - name: Upload Athena SQL Files
+      run: |
+        aws s3 sync athena/sql \
+          s3://${{ secrets.GOLD_BUCKET_NAME }}/athena/sql \
+          --delete
+
+    ############################################################
+    # Verify Athena SQL Upload
+    ############################################################
+
+    - name: Verify Athena SQL Upload
+      run: |
+        aws s3 ls s3://${{ secrets.GOLD_BUCKET_NAME }}/athena/sql/
 
     ############################################################
     # Terraform
@@ -216,7 +243,7 @@ jobs:
 
         for i in {1..12}
         do
-          FILE_COUNT=$(aws s3 ls s3://gold-demo12/Gold_Glue_Test/ --recursive | wc -l)
+          FILE_COUNT=$(aws s3 ls s3://${{ secrets.GOLD_BUCKET_NAME }}/Gold_Glue_Test/ --recursive | wc -l)
 
           echo "Attempt $i - Files Found: $FILE_COUNT"
 
@@ -231,6 +258,29 @@ jobs:
 
         echo "Gold bucket is still empty after waiting."
         exit 1
+    ############################################################
+    # Run Glue Crawler
+    ############################################################
+
+    - name: Run Glue Crawler
+      env:
+        CRAWLER_NAME: flight-gold-crawler
+      run: |
+        python glue/crawler/crawler.py
+
+    ############################################################
+    # Execute Athena SQL
+    ############################################################
+
+    - name: Execute Athena SQL
+      env:
+        GOLD_BUCKET: ${{ secrets.GOLD_BUCKET_NAME }}
+        ATHENA_DATABASE: flight_gold
+        ATHENA_WORKGROUP: primary
+      run: |
+        python athena/athena.py
+
+
 
     ############################################################
     # Deployment Complete
