@@ -1,0 +1,26 @@
+MarketingAirlineKey,AirlineCode,AirlineName,AirlineLabel,AirlineReliabilityScore,AirlineFlightCount,AirlineMonthlyDelayRate
+58bb119c35513a451d24dc20ef0e9031ec85b35bfc919d263e7e5d9868909cb5,AA,American Airlines,AA - American Airlines,87.47,6504266,0.23082877894947132
+bbe96fa9f44ea0fcf38b0ec729822f37f5cc11e625753b2a250a90a3b59dd098,AX,Unknown Airline,AX - Unknown Airline,"","",""
+049753657dd092eacbe4a3ef990d90db57e7a5e2d95a6accaec4f80a9d3625df,QX,Horizon Air,QX - Horizon Air,"","",""
+1d96682bdb05ed312e0ce774ccefe0394472b88085413c3774c2df2ac7618c23,C5,CommutAir,C5 - CommutAir,"","",""
+6d39eec870a24effe4bccfca294fe13412450f8dc626c7f079ce0e7fdf9751f3,F9,Frontier Airlines,F9 - Frontier Airlines,81.69,561341,0.32195121951219513
+20e95ada67c778758b26bd6425863f9a53bb666a98e3fe060eec15866e87cc12,EV,Unknown Airline,EV - Unknown Airline,"","",""
+96d5c2e9349201e3a6adc06614678133de408b0314fe9742b9c2fb30db31add6,YX,Republic Airways,YX - Republic Airways,"","",""
+22f78469636967d0d4d49fd3ef2edbf6060ee702ad8eab9a649330bc7df6ffc5,ZW,Air Wisconsin,ZW - Air Wisconsin,"","",""
+4ca0c115200167ae43caf1028779311a45c4ae2c7b4c7f9a81702f745475fa58,9E,Endeavor Air,9E - Endeavor Air,"","",""
+50693e78abb9832ad9a7dbd0ec46c9c651e333d62311fe0de892f19779f98863,EM,Unknown Airline,EM - Unknown Airline,"","",""
+204f9209e73d1de4b49f59b07fd44f6e6d84c00bfca346801f4f5b480c8a7629,YV,Mesa Airlines,YV - Mesa Airlines,"","",""
+de148153b07d429235e6324fa7eff44d0e873484cafdb9742080213b1d340545,AS,Alaska Airlines,AS - Alaska Airlines,88.86,1410914,0.13443095826777554
+978425f807853d5b45aa67dc5e37fcdb95ee73e1d250930cf7aaf6480254b803,G4,Allegiant Air,G4 - Allegiant Air,80.61,446786,0.3362928218443756
+169b032adf2ab80f3bdffbdf14358d9d72565fad7708f65c65cb4d7918a4ffb2,PT,Piedmont Airlines,PT - Piedmont Airlines,"","",""
+cbb7d1c1d280b95ebc7f829a36661edc83a7b8ba34acd7ca67224320d0e36226,NK,Spirit Airlines,NK - Spirit Airlines,83.89,822734,0.26431008085094954
+89fa78fc72b3f7dc7f1c1e1bb14ecbe785759b9a1f4bc65f347f26fa6afc7285,MQ,Envoy Air,MQ - Envoy Air,"","",""
+2eb993f9bc93c5ff952971e9ce363d4d1cd459aa08e01a807f107a612a5ab865,DL,Delta Air Lines,DL - Delta Air Lines,90.74,5357544,0.16793807794809423
+1cf587e0bafeb6195595fcbdce170411d52ea40dc4e3582aa9bb272d6a4a01a8,UA,United Airlines,UA - United Airlines,87.57,4595635,0.13346149525010298
+33b19c2ea7683b2f49d10921cf42dfaea6a95c494d4cf10c3df3e70a8b4d47f6,HA,Hawaiian Airlines,HA - Hawaiian Airlines,88.01,260990,0.2152800562456058
+bba36f226cdd988cfb4953ec680b214e315b120a0de4ba0fb12363487f7e1ad6,OH,PSA Airlines,OH - PSA Airlines,"","",""
+3a5357e2b96761804f6b2353fecd783c64967403b17b0db6360624400047d6ea,G7,GoJet Airlines,G7 - GoJet Airlines,"","",""
+8bb7518fd7652c5405f70a864337b43cf9aa47152b61859fb185b1c3cba67854,OO,SkyWest Airlines,OO - SkyWest Airlines,"","",""
+036b8c588170c56b2cb322ae8d88a41867afab5c5eeaf32f0d2386850332f579,WN,Southwest Airlines,WN - Southwest Airlines,86.12,4771530,0.25533323750432996
+e4918de4024a9f134bdf9a0eca65831b25bb799fca9245ed6b787b87c5cef7f5,CP,Unknown Airline,CP - Unknown Airline,"","",""
+9d574e1d3c5ed212edee33e2478e5a62cdecc5b5cb365479c4eb99e9d342aa38,B6,JetBlue Airways,B6 - JetBlue Airways,80.54,894775,0.3350413574990877
