@@ -1,192 +1,117 @@
-# Machine Learning Workflow
-# ✈️ Flight Delay Prediction using Apache Spark MLlib
+## 🤖 Machine Learning Workflow
 
-## 📌 Project Overview
-
-This project predicts whether a flight will be delayed by **15 minutes or more (ArrDel15)** using Apache Spark MLlib on Amazon EMR. The project focuses on scalable machine learning for large datasets by leveraging distributed data processing and feature engineering.
-
-The complete workflow includes data preprocessing, feature engineering, feature selection, model training, and evaluation using Random Forest.
-
----
-
-## 📂 Dataset
-
-- **Source:** Airline Flight Delay Dataset (2020–2025)
-- **Storage:** Amazon S3 (Gold Layer)
-- **Format:** Apache Parquet
-- **Records:** ~40 Million
-- **Target Variable:** `ArrDel15`
-
----
-
-## 🛠️ Tech Stack
-
-- Python
-- Apache Spark (PySpark)
-- Spark MLlib
-- Amazon EMR
-- Amazon S3
-- Jupyter Notebook
-
----
-
-## 📊 Features Used
-
-### Numerical Features
-
-- DepartureHour
-- ArrivalHour
-- PeakHourIndicator
-- WeekendIndicator
-- Distance
-- ScheduledElapsedTimeMinutes
-- CodeshareFlag
-- IntraStateRouteFlag
-- AirlineReliabilityScore
-- OriginAirportReliabilityScore
-- DestAirportReliabilityScore
-- RouteReliabilityScore
-
-### Categorical Features
-
-- MarketingAirlineKey
-- OperatingAirlineKey
-- DeparturePeriod
-- ArrivalPeriod
-- SeasonIndicator
-- DistanceCategory
-
----
-
-## 🔄 Project Workflow
-
-```
-Raw Parquet Data (Amazon S3)
-            │
-            ▼
-      Data Cleaning
-            │
-            ▼
- Handle Missing Values
-            │
-            ▼
- Feature Engineering
-            │
-            ▼
- String Indexing
-            │
-            ▼
- Vector Assembler
-            │
-            ▼
- Feature Selection
- (Random Forest Importance)
-            │
-            ▼
- Selected Features
-            │
-            ▼
- Random Forest Training
-            │
-            ▼
- Model Evaluation
+```text
+┌──────────────────────────────┐
+│     ✈️ Flight Data           │
+│       ~40M Records           │
+│   Parquet / Amazon S3        │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│     🧹 Data Preparation      │
+│  Cleaning • Validation       │
+│  Transformation • ETL        │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│      🥇 Gold ML Dataset      │
+│   ML-ready flight records    │
+│    Train / Val / Test        │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│   ⚙️ Feature Engineering     │
+│  Time • Distance • Route     │
+│  Airline • Airport • Season  │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│ 📊 Historical Features       │
+│ Reliability Scores           │
+│ Delay Rates • Flight Counts  │
+│ Monthly / Route Statistics   │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│     🔬 ML Experimentation    │
+│  Stratified Sampling         │
+│        ↓                     │
+│      LightGBM                │
+│  Rapid Model Evaluation      │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│    ⚡ Full-Scale Training    │
+│         PySpark              │
+│    Random Forest Pipeline    │
+│  StringIndexer → OHE → RF    │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│       📈 Evaluation          │
+│ Accuracy • Precision         │
+│ Recall • F1 Score            │
+│ Confusion Matrix             │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│     🔍 Explainability        │
+│   Feature Importance          │
+│       + SHAP Analysis        │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│       ☁️ Model Storage       │
+│       Amazon S3              │
+│     PipelineModel            │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│       🌐 Deployment          │
+│       Streamlit App          │
+│                              │
+│  ✈️ Delay Prediction         │
+│  🏆 Airline Recommendation   │
+└──────────────────────────────┘
 ```
 
----
+### 📌 Workflow Description
 
-## ⚙️ Preprocessing
+**1. Data Preparation**
+Approximately **40 million flight records** are processed using PySpark and stored in Amazon S3. The data undergoes cleaning, validation, transformation and ETL processing.
 
-- Removed unnecessary metadata columns
-- Handled missing values
-- Indexed categorical features using `StringIndexer`
-- Combined numerical and categorical features using `VectorAssembler`
+**2. Feature Engineering**
+Flight-level, temporal, route, airline and airport features are created. Historical reliability scores, delay rates, flight counts and monthly statistics are added to capture recurring delay patterns.
 
----
+**3. ML Experimentation**
+A representative/stratified sample is used for rapid experimentation with **LightGBM** before scaling the solution to the complete dataset.
 
-## 🌲 Feature Selection
+**4. Full-Scale Model**
+The final model uses a **PySpark Random Forest pipeline** with categorical encoding and feature assembly, enabling distributed training on the large dataset.
 
-Feature importance was extracted using **Random Forest** trained on a sampled dataset.
+**5. Evaluation & Explainability**
+The model is evaluated using Accuracy, Precision, Recall and F1 Score. Feature importance and SHAP analysis are used to understand model behavior.
 
-Selected Features:
+**6. Deployment**
+The complete model pipeline is saved to **Amazon S3** and integrated into a **Streamlit application** for real-time flight delay prediction and airline recommendation.
 
-- RouteReliabilityScore
-- DepartureHour
-- DeparturePeriod
-- SeasonIndicator
-- ArrivalHour
-- AirlineReliabilityScore
-- ArrivalPeriod
-- OriginAirportReliabilityScore
-- OperatingAirlineKey
-- MarketingAirlineKey
-- DestAirportReliabilityScore
-- CodeshareFlag
+### 📊 Final Model Performance
 
----
+| Metric             |      Score |
+| ------------------ | ---------: |
+| Accuracy           | **79.39%** |
+| Weighted Precision | **73.57%** |
+| Weighted Recall    | **79.39%** |
+| F1 Score           | **70.72%** |
 
-## 🤖 Model
-
-Algorithm:
-
-- Random Forest Classifier
-
-Hyperparameters:
-
-- Number of Trees: 100
-- Maximum Depth: 10
-- Maximum Bins: 64
-- Feature Subset Strategy: sqrt
-
----
-
-## 📈 Evaluation Metrics
-
-The model was evaluated using:
-
-- Accuracy
-- Precision
-- Recall
-- F1 Score
-- ROC-AUC
-
----
-
-## 🚀 Project Structure
-
-```
-Flight-Delay-Prediction/
-│
-├── notebooks/
-│   └── flight_ml_rf.ipynb
-│
-├── README.md
-│
-└── requirements.txt
-```
-
----
-
-## ☁️ Infrastructure
-
-- Amazon EMR
-- Apache Spark
-- Amazon S3
-- Distributed Processing using PySpark
-
----
-
-## Future Improvements
-
-- Hyperparameter tuning
-- Compare Random Forest with GBTClassifier and Logistic Regression
-- Model deployment using SageMaker or ECS
-- CI/CD using GitHub Actions
-- Real-time prediction pipeline
-
----
-
-## Author
-
-Dharmraj Patil
-
-Machine Learning | Data Engineering | AWS | Apache Spark
+**Final Model:** PySpark Random Forest — `60 trees`, `maxDepth=10`, `maxBins=256`, `featureSubsetStrategy="sqrt"`, and `subsamplingRate=0.8`.
