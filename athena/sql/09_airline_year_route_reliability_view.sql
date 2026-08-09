@@ -43,10 +43,3 @@ SELECT
 , DENSE_RANK() OVER (PARTITION BY airlinecode, year ORDER BY reliabilityscore ASC) bottom_reliability_rank
 FROM
   route_metrics
-
-
-
-
-------------------------------------------------------------------------------------
-KPIS SUMMARY
--------------------------------------------------------------------------------------
