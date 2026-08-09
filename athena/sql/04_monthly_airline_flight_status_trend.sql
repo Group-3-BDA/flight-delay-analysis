@@ -73,6 +73,3 @@ GROUP BY
     AirlineCode,
     AirlineName,
     AirlineLabel;
----------------------------------------------------------
-AIRPORT PERFORMANCE:
---------------------------------------------------------
