@@ -243,7 +243,7 @@ This makes the project easier to maintain and allows new data to be processed wi
 ---
 
 ### Project Architecture
-<img width="2038" height="1154" alt="diagram-export-2-8-2026-11_02_26-am" src="https://github.com/user-attachments/assets/98543016-41e9-4e32-8348-ab430a3e6f15" />
+<img width="1946" height="897" alt="Intelligent Aviation Analysis and Flight Delay Prediction Platform" src="https://github.com/user-attachments/assets/e4262f70-b6da-4d3b-b98f-e079afd963b7" />
 
 # Project Repository
 
