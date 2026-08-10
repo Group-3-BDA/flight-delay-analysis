@@ -2,6 +2,10 @@ name: Flight Delay CI/CD Pipeline
 
 on:
   workflow_dispatch:
+  
+  push:
+    branches:
+      - main
 
 concurrency:
   group: flight-delay-pipeline
